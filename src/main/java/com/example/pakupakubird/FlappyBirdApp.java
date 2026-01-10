@@ -148,18 +148,18 @@ public class FlappyBirdApp extends Application {
         pipes.removeAll(toRemove);
         root.getChildren().removeAll(toRemove);
         
-        // Simple Score update (when pipe passes bird)
-        // Note: each pipe pair consists of 2 Rectangles. We can count based on one of them.
+        // Score update
         for (Rectangle pipe : pipes) {
-             // Check if pipe passed the bird just now.
-             // pipe.getTranslateX() is the left edge.
-             // bird.getTranslateX() is the left edge.
-             // If pipe right edge passed bird left edge? Standard flappy score is when passing the pipe completely.
-             if (!toRemove.contains(pipe) && 
-                 pipe.getTranslateY() == 0 && // Check top pipe only to avoid double counting
-                 Math.abs((pipe.getTranslateX() + PIPE_WIDTH) - bird.getTranslateX()) < PIPE_SPEED) {
-                 score++;
-                 scoreText.setText("Score: " + score);
+             // Only check top pipe to avoid double counting per pair
+             if (pipe.getTranslateY() == 0) {
+                 // Check if pipe passed the bird
+                 if (pipe.getTranslateX() + PIPE_WIDTH < bird.getTranslateX()) {
+                     if (!"scored".equals(pipe.getUserData())) {
+                         score++;
+                         scoreText.setText("Score: " + score);
+                         pipe.setUserData("scored");
+                     }
+                 }
              }
         }
 
