@@ -3,6 +3,7 @@ package com.example.pakupakubird;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -10,11 +11,13 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
@@ -23,301 +26,154 @@ public class FlappyBirdApp extends Application {
 
     private static final int WINDOW_WIDTH = 600;
     private static final int WINDOW_HEIGHT = 600;
-    private static final double GRAVITY = 0.6;
-    private static final double JUMP_STRENGTH = -10;
-    private static final double PIPE_SPEED = 3;
-    private static final double PIPE_WIDTH = 60;
-    private static final double PIPE_GAP = 230;
-    private static final int SPAWN_INTERVAL = 110;
 
     private Canvas canvas;
     private GraphicsContext gc;
     private AnimationTimer timer;
+    private BorderPane root;
 
-    // Game State
-    private boolean isGameRunning = false;
-    private boolean isGameOver = false;
-    private int score = 0;
-    private int ticks = 0;
+    // Game Mode Management
+    private enum GameState {
+        TITLE, FLAPPY, RUN
+    }
+    private GameState currentState = GameState.TITLE;
 
-    // Physics
-    private double birdY;
-    private double birdVelocity = 0;
-    private final double birdX = 100;
-    private double birdDisplayWidth = 40;
-    private double birdDisplayHeight = 40;
-
-    // Objects
-    private List<Pipe> pipes = new ArrayList<>();
-    private Random random = new Random();
-
-    // Assets
-    private Image birdNormalImage;
-    private Image birdJumpImage;
-    // pipeImage removed
-
-    // UI
-    // Removed TextField and Button as requested
+    private FlappyBirdGame flappyGame;
+    private RunnerGame runnerGame;
 
     @Override
     public void start(Stage stage) {
-        // Layout
-        BorderPane root = new BorderPane();
-
-        // 1. MenuBar (Top) - Keeping menu for now as it's useful
-        MenuBar menuBar = new MenuBar();
-        Menu fileMenu = new Menu("File");
-        MenuItem exitItem = new MenuItem("Exit");
-        exitItem.setOnAction(e -> Platform.exit());
-        fileMenu.getItems().add(exitItem);
-
-        Menu gameMenu = new Menu("Game");
-        MenuItem restartItem = new MenuItem("Restart");
-        restartItem.setOnAction(e -> resetGame());
-        gameMenu.getItems().add(restartItem);
-
-        Menu helpMenu = new Menu("Help");
-        MenuItem aboutItem = new MenuItem("About");
-        aboutItem.setOnAction(e -> showHelp());
-        helpMenu.getItems().add(aboutItem);
-
-        menuBar.getMenus().addAll(fileMenu, gameMenu, helpMenu);
+        root = new BorderPane();
+        
+        // Setup Menu
+        MenuBar menuBar = createMenuBar();
         root.setTop(menuBar);
 
-        // 2. Canvas (Center)
+        // Setup Canvas
         canvas = new Canvas(WINDOW_WIDTH, WINDOW_HEIGHT);
         gc = canvas.getGraphicsContext2D();
         root.setCenter(canvas);
 
-        loadAssets();
+        // Operations
+        flappyGame = new FlappyBirdGame();
+        runnerGame = new RunnerGame();
 
         Scene scene = new Scene(root);
-
-        // Event Handling
+        
+        // Input Handling
         scene.setOnKeyPressed(event -> {
-            if (event.getCode() == KeyCode.SPACE) {
-                handleInput();
-            }
+            if (currentState == GameState.FLAPPY) flappyGame.handleKeyPress(event.getCode());
+            else if (currentState == GameState.RUN) runnerGame.handleKeyPress(event.getCode());
         });
         
-        canvas.setOnMouseClicked(event -> handleInput());
+        scene.setOnKeyReleased(event -> {
+            if (currentState == GameState.RUN) runnerGame.handleKeyRelease(event.getCode());
+        });
+        
+        canvas.setOnMouseClicked(event -> {
+             if (currentState == GameState.FLAPPY) flappyGame.handleInput();
+             else if (currentState == GameState.RUN) runnerGame.handleInput();
+        });
 
-        stage.setTitle("Flappy Bird Enhanced");
+        stage.setTitle("JavaFX Game Centre");
         stage.setScene(scene);
         stage.show();
-        
-        // Start loop immediately for rendering (e.g. title screen)
+
+        // Game Loop
         timer = new AnimationTimer() {
             @Override
             public void handle(long now) {
-                update();
                 render();
+                update();
             }
         };
         timer.start();
-
-        // Initialize state (bird center)
-        resetGameStates();
-    }
-    
-    private void handleInput() {
-        if (!isGameRunning && !isGameOver) {
-            startGame();
-        } else if (isGameRunning) {
-            jump();
-        } else if (isGameOver) {
-            resetGame();
-        }
+        
+        showTitleScreen();
     }
 
-    private void loadAssets() {
-        try {
-            birdNormalImage = new Image(getClass().getResourceAsStream("usako_normal.png"));
-            birdJumpImage = new Image(getClass().getResourceAsStream("usako_jump.png"));
-            // pipeImage removed
-
-            if (birdNormalImage != null) {
-                double ratio = birdNormalImage.getWidth() / birdNormalImage.getHeight();
-                birdDisplayWidth = 40;
-                birdDisplayHeight = 40 / ratio;
-            }
-        } catch (Exception e) {
-            System.err.println("Could not load images: " + e.getMessage());
-        }
+    private MenuBar createMenuBar() {
+        MenuBar menuBar = new MenuBar();
+        Menu fileMenu = new Menu("File");
+        MenuItem exitItem = new MenuItem("Exit");
+        exitItem.setOnAction(e -> Platform.exit());
+        MenuItem titleItem = new MenuItem("Back to Title");
+        titleItem.setOnAction(e -> showTitleScreen());
+        fileMenu.getItems().addAll(titleItem, exitItem);
+        
+        Menu helpMenu = new Menu("Help");
+        MenuItem aboutItem = new MenuItem("About");
+        aboutItem.setOnAction(e -> showHelp());
+        helpMenu.getItems().add(aboutItem);
+        
+        menuBar.getMenus().addAll(fileMenu, helpMenu);
+        return menuBar;
     }
 
-    private void startGame() {
-        isGameRunning = true;
-        isGameOver = false;
-        // Bird might drop if we don't jump immediately, but handleInput usually means user pressed action
-        jump();
+    private void showTitleScreen() {
+        currentState = GameState.TITLE;
+        
+        VBox menuBox = new VBox(20);
+        menuBox.setAlignment(Pos.CENTER);
+        menuBox.setStyle("-fx-background-color: rgba(255, 255, 255, 0.8); -fx-padding: 50;");
+        
+        Label titleLabel = new Label("Select Game");
+        titleLabel.setFont(Font.font("Arial", 30));
+        
+        Button flappyBtn = new Button("Flappy Bird");
+        flappyBtn.setStyle("-fx-font-size: 20px; -fx-min-width: 200px;");
+        flappyBtn.setOnAction(e -> startFlappyBird());
+        
+        Button runBtn = new Button("Run Game (Dino Style)");
+        runBtn.setStyle("-fx-font-size: 20px; -fx-min-width: 200px;");
+        runBtn.setOnAction(e -> startRunnerGame());
+        
+        menuBox.getChildren().addAll(titleLabel, flappyBtn, runBtn);
+        root.setCenter(menuBox); 
     }
 
-    private void resetGameStates() {
-        birdY = canvas.getHeight() / 2;
-        birdVelocity = 0;
-        score = 0;
-        ticks = 0;
-        pipes.clear();
-        isGameOver = false;
-        isGameRunning = false;
-    }
-    
-    private void resetGame() {
-        resetGameStates();
-        // Don't auto-start, wait for input again? Or auto-start?
-        // User said "Space or click to start".
-        // If "reset", we probably go back to ready state.
-        isGameRunning = false;
-        isGameOver = false;
+    private void startFlappyBird() {
+        currentState = GameState.FLAPPY;
+        root.setCenter(canvas); 
+        canvas.requestFocus();
+        flappyGame.resetGame();
     }
 
-    private void jump() {
-        birdVelocity = JUMP_STRENGTH;
+    private void startRunnerGame() {
+        currentState = GameState.RUN;
+        root.setCenter(canvas);
+        canvas.requestFocus();
+        runnerGame.resetGame();
     }
 
     private void update() {
-        // If not running, maybe just hover bird?
-        if (!isGameRunning && !isGameOver) {
-             // Hover effect
-             birdY = (canvas.getHeight() / 2) + Math.sin(System.currentTimeMillis() / 300.0) * 10;
-             return;
+        if (root.getCenter() != canvas) return; 
+
+        if (currentState == GameState.FLAPPY) {
+            flappyGame.update();
+        } else if (currentState == GameState.RUN) {
+            runnerGame.update();
         }
-
-        if (isGameOver) return; // Stop updates on game over
-
-        ticks++;
-        birdVelocity += GRAVITY;
-        birdY += birdVelocity;
-
-        if (ticks % SPAWN_INTERVAL == 0) {
-            spawnPipe();
-        }
-
-        Iterator<Pipe> iter = pipes.iterator();
-        while (iter.hasNext()) {
-            Pipe pipe = iter.next();
-            pipe.x -= PIPE_SPEED;
-
-            if (!pipe.scored && pipe.x + PIPE_WIDTH < birdX) {
-                score++;
-                pipe.scored = true;
-            }
-
-            if (pipe.x + PIPE_WIDTH < -10) {
-                iter.remove();
-            }
-
-            if (checkCollision(pipe)) {
-                gameOver();
-            }
-        }
-
-        if (birdY < 0 || birdY + birdDisplayHeight > canvas.getHeight()) {
-            gameOver();
-        }
-    }
-    
-    private boolean checkCollision(Pipe pipe) {
-        double bx = birdX + 2;
-        double by = birdY + 2;
-        double bw = birdDisplayWidth - 4;
-        double bh = birdDisplayHeight - 4;
-        
-        if (bx < pipe.x + PIPE_WIDTH && bx + bw > pipe.x &&
-            by < pipe.topHeight && by + bh > 0) {
-            return true;
-        }
-        
-        double bottomPipeY = pipe.topHeight + PIPE_GAP;
-        if (bx < pipe.x + PIPE_WIDTH && bx + bw > pipe.x &&
-            by < canvas.getHeight() && by + bh > bottomPipeY) { 
-            return true;
-        }
-        
-        return false;
-    }
-
-    private void spawnPipe() {
-        double minHeight = 50;
-        double maxHeight = canvas.getHeight() - PIPE_GAP - minHeight;
-        double height = minHeight + random.nextDouble() * (maxHeight - minHeight);
-        pipes.add(new Pipe(WINDOW_WIDTH, height));
-    }
-
-    private void gameOver() {
-        isGameOver = true;
-        isGameRunning = false;
     }
 
     private void render() {
-        gc.setFill(Color.SKYBLUE);
-        gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        if (root.getCenter() != canvas) return;
 
-        for (Pipe pipe : pipes) {
-            // Draw Pipe Body
-            gc.setFill(Color.web("#74BF2E")); // Classic pipe green
-            gc.fillRect(pipe.x, 0, PIPE_WIDTH, pipe.topHeight);
-            gc.fillRect(pipe.x, pipe.topHeight + PIPE_GAP, PIPE_WIDTH, canvas.getHeight() - (pipe.topHeight + PIPE_GAP));
-            
-            // Draw Pipe Borders
-            gc.setStroke(Color.BLACK);
-            gc.setLineWidth(2);
-            gc.strokeRect(pipe.x, 0, PIPE_WIDTH, pipe.topHeight);
-            gc.strokeRect(pipe.x, pipe.topHeight + PIPE_GAP, PIPE_WIDTH, canvas.getHeight() - (pipe.topHeight + PIPE_GAP));
-            
-            // Optional: Draw Pipe Cap for detail
-            double capHeight = 20;
-            // Top pipe cap
-            gc.fillRect(pipe.x - 2, pipe.topHeight - capHeight, PIPE_WIDTH + 4, capHeight);
-            gc.strokeRect(pipe.x - 2, pipe.topHeight - capHeight, PIPE_WIDTH + 4, capHeight);
-            
-            // Bottom pipe cap
-            gc.fillRect(pipe.x - 2, pipe.topHeight + PIPE_GAP, PIPE_WIDTH + 4, capHeight);
-            gc.strokeRect(pipe.x - 2, pipe.topHeight + PIPE_GAP, PIPE_WIDTH + 4, capHeight);
-        }
+        // Clear
+        gc.clearRect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-        Image currentBird = birdNormalImage;
-        if (birdVelocity < 0 && birdJumpImage != null) {
-            currentBird = birdJumpImage;
-        } else if (birdNormalImage != null) {
-            currentBird = birdNormalImage;
-        }
-
-        if (currentBird != null) {
-            gc.drawImage(currentBird, birdX, birdY, birdDisplayWidth, birdDisplayHeight);
-        } else {
-            gc.setFill(Color.YELLOW);
-            gc.fillRect(birdX, birdY, birdDisplayWidth, birdDisplayHeight);
-        }
-        
-        // UI Layer
-        gc.setFill(Color.BLACK);
-        gc.setFont(Font.font("Arial", 24));
-        gc.fillText("Score: " + score, 20, 40);
-
-        if (!isGameRunning && !isGameOver) {
-             gc.setFill(Color.WHITE);
-             gc.setFont(Font.font("Arial", 30));
-             gc.fillText("Press Space/Click to Start", WINDOW_WIDTH / 2.0 - 180, WINDOW_HEIGHT / 2.0 + 100);
-        }
-
-        if (isGameOver) {
-            gc.setFill(Color.RED);
-            gc.setFont(Font.font("Arial", 50));
-            gc.fillText("GAME OVER", WINDOW_WIDTH / 2.0 - 150, WINDOW_HEIGHT / 2.0);
-            gc.setFill(Color.WHITE);
-            gc.setFont(Font.font("Arial", 24));
-            gc.fillText("Score: " + score, WINDOW_WIDTH / 2.0 - 50, WINDOW_HEIGHT / 2.0 + 50);
-            gc.fillText("Press Space to Restart", WINDOW_WIDTH / 2.0 - 120, WINDOW_HEIGHT / 2.0 + 90);
+        if (currentState == GameState.FLAPPY) {
+            flappyGame.render(gc);
+        } else if (currentState == GameState.RUN) {
+            runnerGame.render(gc);
         }
     }
-    
+
     private void showHelp() {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Help");
-        alert.setHeaderText("How to Play");
-        alert.setContentText("Use SPACE or Click to jump.\nAvoid pixel pipes!");
+        alert.setHeaderText("Controls");
+        alert.setContentText("Flappy Bird: Space/Click to Jump\nRun Game: Up=Jump, Down=Crouch");
         alert.showAndWait();
     }
 
@@ -325,14 +181,440 @@ public class FlappyBirdApp extends Application {
         launch();
     }
 
-    private static class Pipe {
-        double x;
-        double topHeight;
-        boolean scored = false;
+    // ==========================================
+    // FLAPPY BIRD IMPLEMENTATION
+    // ==========================================
+    class FlappyBirdGame {
+        private static final double GRAVITY = 0.6;
+        private static final double JUMP_STRENGTH = -10;
+        private static final double PIPE_SPEED = 3;
+        private static final double PIPE_WIDTH = 60;
+        private static final double PIPE_GAP = 230; 
+        private static final int SPAWN_INTERVAL = 110;
 
-        Pipe(double x, double topHeight) {
-            this.x = x;
-            this.topHeight = topHeight;
+        boolean isRunning = false;
+        boolean isGameOver = false;
+        int score = 0;
+        int ticks = 0;
+        
+        double birdY;
+        double birdVelocity = 0;
+        final double birdX = 100;
+        double birdDisplayWidth = 40;
+        double birdDisplayHeight = 40;
+        
+        List<Pipe> pipes = new ArrayList<>();
+        Random random = new Random();
+        
+        Image birdNormal, birdJump;
+
+        FlappyBirdGame() {
+            loadAssets();
+        }
+
+        void loadAssets() {
+            try {
+                birdNormal = new Image(getClass().getResourceAsStream("usako_normal.png"));
+                birdJump = new Image(getClass().getResourceAsStream("usako_jump.png"));
+                
+                if (birdNormal != null) {
+                    double ratio = birdNormal.getWidth() / birdNormal.getHeight();
+                    birdDisplayWidth = 40;
+                    birdDisplayHeight = 40 / ratio;
+                }
+            } catch (Exception e) {
+                System.err.println("FlappyAssets Error: " + e.getMessage());
+            }
+        }
+
+        void resetGame() {
+            birdY = WINDOW_HEIGHT / 2.0;
+            birdVelocity = 0;
+            score = 0;
+            ticks = 0;
+            pipes.clear();
+            isRunning = false;
+            isGameOver = false;
+        }
+
+        void handleKeyPress(KeyCode code) {
+            if (code == KeyCode.SPACE) {
+                handleInput();
+            }
+        }
+
+        void handleInput() {
+            if (!isRunning && !isGameOver) {
+                isRunning = true;
+                birdVelocity = JUMP_STRENGTH;
+            } else if (isRunning) {
+                birdVelocity = JUMP_STRENGTH;
+            } else if (isGameOver) {
+                resetGame();
+            }
+        }
+
+        void update() {
+             if (!isRunning && !isGameOver) {
+                 birdY = (WINDOW_HEIGHT / 2.0) + Math.sin(System.currentTimeMillis() / 300.0) * 10;
+                 return;
+             }
+             if (isGameOver) return;
+
+             ticks++;
+             birdVelocity += GRAVITY;
+             birdY += birdVelocity;
+
+             if (ticks % SPAWN_INTERVAL == 0) spawnPipe();
+
+             Iterator<Pipe> iter = pipes.iterator();
+             while (iter.hasNext()) {
+                 Pipe p = iter.next();
+                 p.x -= PIPE_SPEED;
+                 if (!p.scored && p.x + PIPE_WIDTH < birdX) {
+                     score++;
+                     p.scored = true;
+                 }
+                 if (p.x + PIPE_WIDTH < -10) iter.remove();
+                 if (checkCollision(p)) gameOver();
+             }
+
+             if (birdY < 0 || birdY + birdDisplayHeight > WINDOW_HEIGHT) gameOver();
+        }
+
+        boolean checkCollision(Pipe p) {
+            double bx = birdX + 2;
+            double by = birdY + 2;
+            double bw = birdDisplayWidth - 4;
+            double bh = birdDisplayHeight - 4;
+            if (bx < p.x + PIPE_WIDTH && bx + bw > p.x && by < p.topHeight && by + bh > 0) return true;
+            if (bx < p.x + PIPE_WIDTH && bx + bw > p.x && by < WINDOW_HEIGHT && by + bh > p.topHeight + PIPE_GAP) return true;
+            return false;
+        }
+
+        void spawnPipe() {
+            double minHeight = 50;
+            double maxHeight = WINDOW_HEIGHT - PIPE_GAP - minHeight;
+            double h = minHeight + random.nextDouble() * (maxHeight - minHeight);
+            pipes.add(new Pipe(WINDOW_WIDTH, h));
+        }
+
+        void gameOver() {
+            isGameOver = true;
+            isRunning = false;
+        }
+
+        void render(GraphicsContext gc) {
+            gc.setFill(Color.SKYBLUE);
+            gc.fillRect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+
+            for (Pipe p : pipes) {
+                gc.setFill(Color.web("#74BF2E"));
+                gc.fillRect(p.x, 0, PIPE_WIDTH, p.topHeight);
+                gc.fillRect(p.x, p.topHeight + PIPE_GAP, PIPE_WIDTH, WINDOW_HEIGHT - (p.topHeight + PIPE_GAP));
+                gc.setStroke(Color.BLACK);
+                gc.setLineWidth(2);
+                gc.strokeRect(p.x, 0, PIPE_WIDTH, p.topHeight);
+                gc.strokeRect(p.x, p.topHeight + PIPE_GAP, PIPE_WIDTH, WINDOW_HEIGHT - (p.topHeight + PIPE_GAP));
+                 gc.fillRect(p.x - 2, p.topHeight - 20, PIPE_WIDTH + 4, 20);
+                 gc.strokeRect(p.x - 2, p.topHeight - 20, PIPE_WIDTH + 4, 20);
+                 gc.fillRect(p.x - 2, p.topHeight + PIPE_GAP, PIPE_WIDTH + 4, 20);
+                 gc.strokeRect(p.x - 2, p.topHeight + PIPE_GAP, PIPE_WIDTH + 4, 20);
+            }
+
+            Image currentBird = birdNormal;
+            if (birdVelocity < 0 && birdJump != null) currentBird = birdJump;
+            else if (birdNormal != null) currentBird = birdNormal;
+            
+            if (currentBird != null) gc.drawImage(currentBird, birdX, birdY, birdDisplayWidth, birdDisplayHeight);
+            else { gc.setFill(Color.YELLOW); gc.fillRect(birdX, birdY, birdDisplayWidth, birdDisplayHeight); }
+
+            gc.setFill(Color.BLACK);
+            gc.setFont(Font.font("Arial", 24));
+            gc.fillText("Score: " + score, 20, 40);
+
+            if (!isRunning && !isGameOver) {
+                gc.setFill(Color.WHITE);
+                gc.setFont(Font.font("Arial", 30));
+                gc.fillText("Press Space to Start", 150, 350);
+            }
+            if (isGameOver) {
+                gc.setFill(Color.RED);
+                gc.setFont(Font.font("Arial", 50));
+                gc.fillText("GAME OVER", 150, 300);
+                gc.setFill(Color.WHITE);
+                gc.setFont(Font.font("Arial", 24));
+                gc.fillText("Score: " + score, 240, 350);
+                gc.fillText("Press Space to Restart", 170, 390);
+            }
+        }
+    }
+    
+    class Pipe {
+        double x, topHeight;
+        boolean scored = false;
+        Pipe(double x, double h) { this.x = x; this.topHeight = h; }
+    }
+
+    // ==========================================
+    // RUNNER GAME IMPLEMENTATION
+    // ==========================================
+    class RunnerGame {
+        Image[] runAnim = new Image[5];
+        Image[] squatAnim = new Image[5];
+        Image jumpImg;
+        
+        double playerX = 80; // Fixed X position
+        double playerY;      // Current Y position (represented as Feet Y)
+        double velocityY = 0;
+        double gravity = 0.8;
+        double jumpForce = -15;
+        double groundY = 500; // Floor Level Y
+        
+        // Dynamic sizes
+        double standW = 60, standH = 90;
+        double squatW = 60, squatH = 55;
+
+        boolean isRunning = false;
+        boolean isGameOver = false;
+        boolean isCrouching = false;
+        
+        int score = 0;
+        int tick = 0;
+        
+        List<RunnerObstacle> obstacles = new ArrayList<>();
+        Random random = new Random();
+        double obsSpeed = 6;
+        int spawnTimer = 0;
+
+        RunnerGame() {
+            loadAssets();
+        }
+
+        void loadAssets() {
+            try {
+                for (int i=0; i<5; i++) {
+                    runAnim[i] = new Image(getClass().getResourceAsStream("run" + (i+1) + ".png"));
+                    squatAnim[i] = new Image(getClass().getResourceAsStream("squat" + (i+1) + ".png"));
+                }
+                jumpImg = new Image(getClass().getResourceAsStream("usako_jump.png"));
+                
+                // Calculate Aspect Ratio based on first frame
+                if (runAnim[0] != null) {
+                    double ratio = runAnim[0].getWidth() / runAnim[0].getHeight();
+                    // Fix Height to 90, calculate Width
+                    standH = 90;
+                    standW = standH * ratio;
+                }
+                if (squatAnim[0] != null) {
+                    double ratio = squatAnim[0].getWidth() / squatAnim[0].getHeight();
+                    // Fix Height to 55, calc Width
+                    squatH = 55; 
+                    squatW = squatH * ratio;
+                }
+            } catch(Exception e) {
+                System.err.println("Runner Assets Error: " + e.getMessage());
+            }
+        }
+
+        void resetGame() {
+            obstacles.clear();
+            playerY = groundY;
+            velocityY = 0;
+            score = 0;
+            tick = 0;
+            obsSpeed = 6;
+            isRunning = false;
+            isGameOver = false;
+            isCrouching = false;
+        }
+
+        void handleKeyPress(KeyCode code) {
+            if (isGameOver && code == KeyCode.UP) {
+                resetGame();
+                isRunning = true;
+                return;
+            }
+            if (!isRunning) {
+                 if (code == KeyCode.UP || code == KeyCode.DOWN) isRunning = true;
+            }
+            
+            if (isRunning) {
+                // Feet are at groundY. Jump check.
+                if (code == KeyCode.UP && Math.abs(playerY - groundY) < 1) { 
+                    velocityY = jumpForce;
+                }
+                if (code == KeyCode.DOWN) {
+                    isCrouching = true;
+                    if (playerY < groundY) velocityY += 5;
+                }
+            }
+        }
+        
+        void handleKeyRelease(KeyCode code) {
+            if (code == KeyCode.DOWN) {
+                isCrouching = false;
+            }
+        }
+
+        void handleInput() {
+            if (isGameOver) { resetGame(); isRunning = true; return;}
+            if (!isRunning) isRunning = true;
+            if (Math.abs(playerY - groundY) < 1) velocityY = jumpForce;
+        }
+
+        void update() {
+            if (!isRunning || isGameOver) return;
+            
+            tick++;
+            
+            // Physics
+            velocityY += gravity;
+            playerY += velocityY;
+            
+            if (playerY > groundY) {
+                playerY = groundY;
+                velocityY = 0;
+            }
+            
+            // Obstacles
+            spawnTimer++;
+            if (spawnTimer > (1200 / obsSpeed) + random.nextInt(30)) { 
+                 spawnObstacle();
+                 spawnTimer = 0;
+            }
+            
+            Iterator<RunnerObstacle> iter = obstacles.iterator();
+            while(iter.hasNext()) {
+                RunnerObstacle obs = iter.next();
+                obs.x -= obsSpeed;
+                if (obs.x < -100) iter.remove();
+                if (checkCollision(obs)) {
+                    isGameOver = true;
+                }
+            }
+            
+            if (tick % 10 == 0) score++;
+            if (tick % 1000 == 0) obsSpeed += 0.5;
+        }
+
+        void spawnObstacle() {
+            boolean isSky = random.nextDouble() > 0.6; 
+            
+            double ox = WINDOW_WIDTH;
+            double oy;
+            double ow = 50; // Larger width default
+            double oh = 60; // Larger height default
+            
+            if (isSky) {
+                // Sky (Bird)
+                // Stand Top: 410. Squat Top: 445.
+                // Obstacle Bottom needs to be ~430 to hit Stand but miss Squat.
+                // Let's set Top at 385. Height 45. Bottom 430.
+                oy = groundY - 115; 
+                oh = 45;
+                ow = 45; 
+            } else {
+                // Ground
+                oy = groundY - 60;
+                oh = 60;
+                ow = 50;
+            }
+            obstacles.add(new RunnerObstacle(ox, oy, ow, oh, isSky));
+        }
+        
+        boolean checkCollision(RunnerObstacle obs) {
+            double h = isCrouching ? squatH : standH;
+            double w = isCrouching ? squatW : standW;
+            double px = playerX;
+            double py = playerY - h; // Top-left
+            
+            // Allow slight leeway (hitbox reduction)
+            double buf = 5;
+            return px + buf < obs.x + obs.w && px + w - buf > obs.x &&
+                   py + buf < obs.y + obs.h && py + h - buf > obs.y;
+        }
+
+        void render(GraphicsContext gc) {
+            gc.setFill(Color.WHITE);
+            gc.fillRect(0,0, WINDOW_WIDTH, WINDOW_HEIGHT);
+            
+            // Draw Ground
+            gc.setStroke(Color.BLACK);
+            gc.setLineWidth(2);
+            gc.strokeLine(0, groundY, WINDOW_WIDTH, groundY);
+            
+            // Obstacles
+            for (RunnerObstacle obs : obstacles) {
+                if (obs.isSky) {
+                    gc.setFill(Color.ORANGE); // Bird/Missile
+                    // Draw somewhat bird-like?
+                    gc.fillOval(obs.x, obs.y, obs.w, obs.h);
+                } else {
+                    gc.setFill(Color.web("#74BF2E")); // Cactus/Pipe
+                    gc.fillRect(obs.x, obs.y, obs.w, obs.h);
+                    gc.strokeRect(obs.x, obs.y, obs.w, obs.h);
+                }
+            }
+            
+            // Player
+            Image img = getCurrentSprite();
+            double h = (isCrouching) ? squatH : standH;
+            double w = (isCrouching) ? squatW : standW;
+            double py = playerY - h;
+            
+            if (img != null) {
+                // Preserve aspect ratio of image?
+                // Just draw it in the box
+                gc.drawImage(img, playerX, py, w, h);
+            } else {
+                gc.setFill(Color.BLUE);
+                gc.fillRect(playerX, py, w, h);
+            }
+            
+            // UI
+            gc.setFill(Color.BLACK);
+            gc.setFont(Font.font("Arial", 20));
+            gc.fillText("Score: " + score, WINDOW_WIDTH - 150, 40);
+            
+            if (!isRunning && !isGameOver) {
+                 gc.setFont(Font.font("Arial", 40));
+                 gc.fillText("PRESS UP to START", 100, 200);
+            }
+            if (isGameOver) {
+                gc.setFill(Color.RED);
+                gc.setFont(Font.font("Arial", 50));
+                gc.fillText("GAME OVER", 150, 250);
+                gc.setFont(Font.font("Arial", 20));
+                gc.fillText("Press UP to Restart", 200, 300);
+                gc.fillText("Press ESC/Menu to Quit", 190, 330);
+            }
+        }
+        
+        Image getCurrentSprite() {
+            // Jump
+            if (Math.abs(playerY - groundY) > 5) { // In air
+                if (jumpImg != null) return jumpImg;
+            }
+            // Squat
+            if (isCrouching) {
+                // Animation
+                int frame = (tick / 5) % 5;
+                if (squatAnim[frame] != null) return squatAnim[frame];
+            }
+            // Run
+            int frame = (tick / 5) % 5;
+            if (runAnim[frame] != null) return runAnim[frame];
+            
+            return null; // Fallback
+        }
+    }
+    
+    class RunnerObstacle {
+        double x, y, w, h;
+        boolean isSky;
+        RunnerObstacle(double x, double y, double w, double h, boolean sky) {
+            this.x = x; this.y = y; this.w = w; this.h = h; this.isSky = sky;
         }
     }
 }
