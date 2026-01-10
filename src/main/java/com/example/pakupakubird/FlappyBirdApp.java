@@ -27,7 +27,7 @@ public class FlappyBirdApp extends Application {
     private static final double JUMP_STRENGTH = -10;
     private static final double PIPE_SPEED = 3;
     private static final double PIPE_WIDTH = 60;
-    private static final double PIPE_GAP = 180;
+    private static final double PIPE_GAP = 230;
     private static final int SPAWN_INTERVAL = 110;
 
     private Canvas canvas;
