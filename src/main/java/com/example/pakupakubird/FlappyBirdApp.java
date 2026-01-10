@@ -360,7 +360,7 @@ public class FlappyBirdApp extends Application {
     // RUNNER GAME IMPLEMENTATION
     // ==========================================
     class RunnerGame {
-        Image[] runAnim = new Image[5];
+        Image[] runAnim = new Image[6];
         Image[] squatAnim = new Image[5];
         Image jumpImg;
         
@@ -396,9 +396,12 @@ public class FlappyBirdApp extends Application {
 
         void loadAssets() {
             try {
-                for (int i=0; i<5; i++) {
+                // Run animation has 6 frames, Squat has 5
+                for (int i=0; i<6; i++) {
                     runAnim[i] = new Image(getClass().getResourceAsStream("run" + (i+1) + ".png"));
-                    squatAnim[i] = new Image(getClass().getResourceAsStream("squat" + (i+1) + ".png"));
+                    if (i < 5) {
+                        squatAnim[i] = new Image(getClass().getResourceAsStream("squat" + (i+1) + ".png"));
+                    }
                 }
                 jumpImg = new Image(getClass().getResourceAsStream("usako_jump.png"));
                 
@@ -411,7 +414,7 @@ public class FlappyBirdApp extends Application {
                 }
                 if (squatAnim[0] != null) {
                     // Apply relative scale to squat image, but slightly reduced (0.9x) as requested
-                    double squatScale = scale * 0.8;
+                    double squatScale = scale * 1.2;
                     squatDisplayH = squatAnim[0].getHeight() * squatScale;
                     squatDisplayW = squatAnim[0].getWidth() * squatScale;
                     // Cap hitbox height
@@ -609,8 +612,8 @@ public class FlappyBirdApp extends Application {
                 int frame = (tick / 5) % 5;
                 if (squatAnim[frame] != null) return squatAnim[frame];
             }
-            // Run
-            int frame = (tick / 5) % 5;
+            // Run (6 frames)
+            int frame = (tick / 5) % 6;
             if (runAnim[frame] != null) return runAnim[frame];
             
             return null; // Fallback
