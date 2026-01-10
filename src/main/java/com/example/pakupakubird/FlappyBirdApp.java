@@ -371,9 +371,12 @@ public class FlappyBirdApp extends Application {
         double jumpForce = -15;
         double groundY = 500; // Floor Level Y
         
-        // Dynamic sizes
-        double standW = 60, standH = 90;
-        double squatW = 60, squatH = 55;
+        // Dynamic sizes (Display)
+        double standDisplayW = 60, standDisplayH = 90;
+        double squatDisplayW = 50, squatDisplayH = 90; 
+        
+        // Hitbox sizes
+        double squatHitboxH = 55;
 
         boolean isRunning = false;
         boolean isGameOver = false;
@@ -399,18 +402,20 @@ public class FlappyBirdApp extends Application {
                 }
                 jumpImg = new Image(getClass().getResourceAsStream("usako_jump.png"));
                 
-                // Calculate Aspect Ratio based on first frame
+                // Calculate Scale Factor based on Standing Target Height (90)
+                double scale = 1.0;
                 if (runAnim[0] != null) {
-                    double ratio = runAnim[0].getWidth() / runAnim[0].getHeight();
-                    // Fix Height to 90, calculate Width
-                    standH = 90;
-                    standW = standH * ratio;
+                    standDisplayH = 90;
+                    scale = standDisplayH / runAnim[0].getHeight();
+                    standDisplayW = runAnim[0].getWidth() * scale;
                 }
                 if (squatAnim[0] != null) {
-                    double ratio = squatAnim[0].getWidth() / squatAnim[0].getHeight();
-                    // Fix Height to 55, calc Width
-                    squatH = 55; 
-                    squatW = squatH * ratio;
+                    // Apply relative scale to squat image, but slightly reduced (0.9x) as requested
+                    double squatScale = scale * 0.8;
+                    squatDisplayH = squatAnim[0].getHeight() * squatScale;
+                    squatDisplayW = squatAnim[0].getWidth() * squatScale;
+                    // Cap hitbox height
+                    squatHitboxH = Math.min(squatDisplayH, 60);
                 }
             } catch(Exception e) {
                 System.err.println("Runner Assets Error: " + e.getMessage());
@@ -524,8 +529,9 @@ public class FlappyBirdApp extends Application {
         }
         
         boolean checkCollision(RunnerObstacle obs) {
-            double h = isCrouching ? squatH : standH;
-            double w = isCrouching ? squatW : standW;
+            boolean inAir = Math.abs(playerY - groundY) > 5;
+            double h = (isCrouching && !inAir) ? squatHitboxH : standDisplayH;
+            double w = (isCrouching && !inAir) ? squatDisplayW : standDisplayW;
             double px = playerX;
             double py = playerY - h; // Top-left
             
@@ -559,8 +565,9 @@ public class FlappyBirdApp extends Application {
             
             // Player
             Image img = getCurrentSprite();
-            double h = (isCrouching) ? squatH : standH;
-            double w = (isCrouching) ? squatW : standW;
+            boolean inAir = Math.abs(playerY - groundY) > 5;
+            double h = (isCrouching && !inAir) ? squatDisplayH : standDisplayH;
+            double w = (isCrouching && !inAir) ? squatDisplayW : standDisplayW;
             double py = playerY - h;
             
             if (img != null) {
