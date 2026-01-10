@@ -362,7 +362,7 @@ public class FlappyBirdApp extends Application {
     class RunnerGame {
         Image[] runAnim = new Image[6];
         Image[] squatAnim = new Image[5];
-        Image jumpImg;
+        Image[] jumpAnim = new Image[6];
         
         double playerX = 80; // Fixed X position
         double playerY;      // Current Y position (represented as Feet Y)
@@ -402,8 +402,8 @@ public class FlappyBirdApp extends Application {
                     if (i < 5) {
                         squatAnim[i] = new Image(getClass().getResourceAsStream("squat" + (i+1) + ".png"));
                     }
+                    jumpAnim[i] = new Image(getClass().getResourceAsStream("jump" + (i+1) + ".png"));
                 }
-                jumpImg = new Image(getClass().getResourceAsStream("usako_jump.png"));
                 
                 // Calculate Scale Factor based on Standing Target Height (90)
                 double scale = 1.0;
@@ -604,7 +604,20 @@ public class FlappyBirdApp extends Application {
         Image getCurrentSprite() {
             // Jump
             if (Math.abs(playerY - groundY) > 5) { // In air
-                if (jumpImg != null) return jumpImg;
+                // Map velocityY (-15 to ~15) to frames (0 to 5) to play once
+                // jumpForce is -15. Expected landing velocity approx +15.
+                double maxVy = -jumpForce; 
+                double v = velocityY;
+                
+                // Normalize v from [-15, 15] to [0.0, 1.0]
+                double progress = (v - jumpForce) / (maxVy - jumpForce);
+                
+                int frame = (int)(progress * 6);
+                // Clamp to valid range (0-5)
+                if (frame < 0) frame = 0;
+                if (frame > 5) frame = 5;
+                
+                if (jumpAnim[frame] != null) return jumpAnim[frame];
             }
             // Squat
             if (isCrouching) {
