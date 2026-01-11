@@ -502,11 +502,6 @@ public class FlappyBirdApp extends Application {
                 Font fNormal = Font.font("Verdana", FontWeight.BOLD, 24);
                 gc.setFont(fNormal);
                 
-                String tScore = "Score: " + score;
-                Text txtScore = new Text(tScore); txtScore.setFont(fNormal);
-                double wScore = txtScore.getLayoutBounds().getWidth();
-                gc.fillText(tScore, (WINDOW_WIDTH - wScore) / 2, 320);
-                
                 String tRestart = "スペースか上矢印でリスタート";
                 Text txtRestart = new Text(tRestart); txtRestart.setFont(fNormal);
                 double wRestart = txtRestart.getLayoutBounds().getWidth();
