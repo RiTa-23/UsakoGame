@@ -197,6 +197,7 @@ public class FlappyBirdApp extends Application {
         boolean isRunning = false;
         boolean isGameOver = false;
         int score = 0;
+        int highScore = 0;
         int ticks = 0;
         
         double birdY;
@@ -233,6 +234,7 @@ public class FlappyBirdApp extends Application {
             birdY = WINDOW_HEIGHT / 2.0;
             birdVelocity = 0;
             score = 0;
+            highScore = HighScoreManager.getHighScore("flappy");
             ticks = 0;
             pipes.clear();
             isRunning = false;
@@ -308,6 +310,8 @@ public class FlappyBirdApp extends Application {
         void gameOver() {
             isGameOver = true;
             isRunning = false;
+            HighScoreManager.setHighScore("flappy", score);
+            highScore = HighScoreManager.getHighScore("flappy");
         }
 
         void render(GraphicsContext gc) {
@@ -338,6 +342,8 @@ public class FlappyBirdApp extends Application {
             gc.setFill(Color.BLACK);
             gc.setFont(Font.font("Verdana", FontWeight.BOLD, 24));
             gc.fillText("スコア: " + score, WINDOW_WIDTH - 150, 40);
+            gc.setFont(Font.font("Verdana", FontWeight.BOLD, 18));
+            gc.fillText("最高記録: " + highScore, WINDOW_WIDTH - 150, 70);
 
             if (!isRunning && !isGameOver) {
                 gc.setFill(Color.WHITE);
@@ -415,6 +421,7 @@ public class FlappyBirdApp extends Application {
         boolean isCrouching = false;
         
         int score = 0;
+        int highScore = 0;
         int tick = 0;
         
         List<RunnerObstacle> obstacles = new ArrayList<>();
@@ -459,6 +466,7 @@ public class FlappyBirdApp extends Application {
             playerY = groundY;
             velocityY = 0;
             score = 0;
+            highScore = HighScoreManager.getHighScore("runner");
             tick = 0;
             obsSpeed = 6;
             isRunning = false;
@@ -531,6 +539,8 @@ public class FlappyBirdApp extends Application {
                 if (obs.x < -100) iter.remove();
                 if (checkCollision(obs)) {
                     isGameOver = true;
+                    HighScoreManager.setHighScore("runner", score);
+                    highScore = HighScoreManager.getHighScore("runner");
                 }
             }
             
@@ -633,7 +643,10 @@ public class FlappyBirdApp extends Application {
             // UI
             gc.setFill(Color.BLACK);
             gc.setFont(Font.font("Verdana", FontWeight.BOLD, 20));
+            gc.setFont(Font.font("Verdana", FontWeight.BOLD, 20));
             gc.fillText("スコア: " + score, WINDOW_WIDTH - 150, 40);
+            gc.setFont(Font.font("Verdana", FontWeight.BOLD, 18));
+            gc.fillText("最高記録: " + highScore, WINDOW_WIDTH - 150, 70);
             
             if (!isRunning && !isGameOver) {
                  Font fStart = Font.font("Verdana", FontWeight.BOLD, 40);
