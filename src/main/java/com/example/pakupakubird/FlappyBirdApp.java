@@ -120,11 +120,11 @@ public class FlappyBirdApp extends Application {
         Label titleLabel = new Label("Select Game");
         titleLabel.setFont(Font.font("Arial", 30));
         
-        Button flappyBtn = new Button("Flappy Bird");
+        Button flappyBtn = new Button("Flappy Usako");
         flappyBtn.setStyle("-fx-font-size: 20px; -fx-min-width: 200px;");
         flappyBtn.setOnAction(e -> startFlappyBird());
         
-        Button runBtn = new Button("Run Game (Dino Style)");
+        Button runBtn = new Button("Run Usako");
         runBtn.setStyle("-fx-font-size: 20px; -fx-min-width: 200px;");
         runBtn.setOnAction(e -> startRunnerGame());
         
@@ -238,7 +238,7 @@ public class FlappyBirdApp extends Application {
         }
 
         void handleKeyPress(KeyCode code) {
-            if (code == KeyCode.SPACE) {
+            if (code == KeyCode.SPACE || code == KeyCode.UP) {
                 handleInput();
             }
         }
@@ -336,7 +336,7 @@ public class FlappyBirdApp extends Application {
             if (!isRunning && !isGameOver) {
                 gc.setFill(Color.WHITE);
                 gc.setFont(Font.font("Arial", 30));
-                gc.fillText("Press Space to Start", 150, 350);
+                gc.fillText("Press Space/Click/Up to Start", 150, 350);
             }
             if (isGameOver) {
                 gc.setFill(Color.RED);
