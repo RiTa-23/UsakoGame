@@ -339,11 +339,11 @@ public class FlappyBirdApp extends Application {
             if (currentBird != null) gc.drawImage(currentBird, birdX, birdY, birdDisplayWidth, birdDisplayHeight);
             else { gc.setFill(Color.YELLOW); gc.fillRect(birdX, birdY, birdDisplayWidth, birdDisplayHeight); }
 
-            gc.setFill(Color.BLACK);
+            gc.setFill(Color.WHITE);
             gc.setFont(Font.font("Verdana", FontWeight.BOLD, 24));
-            gc.fillText("Score: " + score, WINDOW_WIDTH - 150, 40);
+            gc.fillText("Score: " + score, WINDOW_WIDTH - 220, 50);
             gc.setFont(Font.font("Verdana", FontWeight.BOLD, 18));
-            gc.fillText("High Score: " + highScore, WINDOW_WIDTH - 150, 70);
+            gc.fillText("High Score: " + highScore, WINDOW_WIDTH - 220, 80);
 
             if (!isRunning && !isGameOver) {
                 gc.setFill(Color.WHITE);
@@ -644,9 +644,9 @@ public class FlappyBirdApp extends Application {
             gc.setFill(Color.BLACK);
             gc.setFont(Font.font("Verdana", FontWeight.BOLD, 20));
             gc.setFont(Font.font("Verdana", FontWeight.BOLD, 20));
-            gc.fillText("Score: " + score, WINDOW_WIDTH - 150, 40);
+            gc.fillText("Score: " + score, WINDOW_WIDTH - 220, 50);
             gc.setFont(Font.font("Verdana", FontWeight.BOLD, 18));
-            gc.fillText("High Score: " + highScore, WINDOW_WIDTH - 150, 70);
+            gc.fillText("High Score: " + highScore, WINDOW_WIDTH - 220, 80);
             
             if (!isRunning && !isGameOver) {
                  Font fStart = Font.font("Verdana", FontWeight.BOLD, 40);
