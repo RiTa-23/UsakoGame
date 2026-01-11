@@ -4,11 +4,15 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
 
 public class HighScoreManager {
     private static final String DIR_PATH = "usako_save";
     private static final String FILE_PATH = DIR_PATH + "/scores.properties";
+    private static final int MAX_RANKING = 5;
     private static Properties properties = new Properties();
 
     static {
@@ -45,19 +49,71 @@ public class HighScoreManager {
     }
 
     public static int getHighScore(String gameMode) {
-        String val = properties.getProperty(gameMode, "0");
-        try {
-            return Integer.parseInt(val);
-        } catch (NumberFormatException e) {
-            return 0;
-        }
+        List<ScoreEntry> list = getTopScores(gameMode);
+        if (list.isEmpty()) return 0;
+        return list.get(0).score;
     }
 
+    public static List<ScoreEntry> getTopScores(String gameMode) {
+        List<ScoreEntry> list = new ArrayList<>();
+        for (int i = 0; i < MAX_RANKING; i++) {
+            String nameKey = gameMode + "." + i + ".name";
+            String scoreKey = gameMode + "." + i + ".score";
+            
+            if (properties.containsKey(scoreKey)) {
+                String name = properties.getProperty(nameKey, "NoName");
+                int score = Integer.parseInt(properties.getProperty(scoreKey, "0"));
+                list.add(new ScoreEntry(name, score));
+            }
+        }
+        // Ensure sorted (though save logic keeps it sorted)
+        list.sort((a, b) -> Integer.compare(b.score, a.score));
+        return list;
+    }
+
+    public static void submitScore(String gameMode, String name, int score) {
+        List<ScoreEntry> list = getTopScores(gameMode);
+        list.add(new ScoreEntry(name, score));
+        list.sort((a, b) -> Integer.compare(b.score, a.score));
+        
+        // Trim to MAX
+        if (list.size() > MAX_RANKING) {
+            list = list.subList(0, MAX_RANKING);
+        }
+        
+        // Save back
+        for (int i = 0; i < MAX_RANKING; i++) {
+            String nameKey = gameMode + "." + i + ".name";
+            String scoreKey = gameMode + "." + i + ".score";
+            
+            if (i < list.size()) {
+                properties.setProperty(nameKey, list.get(i).name);
+                properties.setProperty(scoreKey, String.valueOf(list.get(i).score));
+            } else {
+                // Clear extra slots if list shrank (unlikely but safe)
+                properties.remove(nameKey);
+                properties.remove(scoreKey);
+            }
+        }
+        save();
+    }
+    
+    // For compatibility with old setHighScore calls (assumes "Anonymous")
     public static void setHighScore(String gameMode, int score) {
-        int currentHigh = getHighScore(gameMode);
-        if (score > currentHigh) {
-            properties.setProperty(gameMode, String.valueOf(score));
-            save();
+        // We will not auto-submit anonymous high scores anymore if we want user input.
+        // However, if we want to track 'current high' during game, we might need to check logic.
+        // For now, this method simply ignores saving if it doesn't have a name, 
+        // OR we can save as "Unknown".
+        // Let's deprecate this side-effect. The Game Over screen will handle submission.
+    }
+
+    public static class ScoreEntry {
+        public String name;
+        public int score;
+
+        public ScoreEntry(String name, int score) {
+            this.name = name;
+            this.score = score;
         }
     }
 }

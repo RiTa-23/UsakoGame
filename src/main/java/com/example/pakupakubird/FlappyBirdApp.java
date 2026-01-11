@@ -38,6 +38,9 @@ public class FlappyBirdApp extends Application {
     private GraphicsContext gc;
     private AnimationTimer timer;
     private BorderPane root;
+    private StackPane gameStack;
+    private VBox overlayBox;
+    private boolean isOverlayActive = false;
 
     // Game Mode Management
     private enum GameState {
@@ -57,9 +60,18 @@ public class FlappyBirdApp extends Application {
         root.setTop(menuBar);
 
         // Setup Canvas
+        // Setup Canvas and Overlay
         canvas = new Canvas(WINDOW_WIDTH, WINDOW_HEIGHT);
         gc = canvas.getGraphicsContext2D();
-        root.setCenter(canvas);
+        
+        overlayBox = new VBox(15);
+        overlayBox.setAlignment(Pos.CENTER);
+        overlayBox.setStyle("-fx-background-color: rgba(0, 0, 0, 0.8); -fx-padding: 30;");
+        overlayBox.setVisible(false);
+        overlayBox.setMaxSize(400, 500);
+
+        gameStack = new StackPane(canvas, overlayBox);
+        root.setCenter(gameStack);
 
         // Operations
         flappyGame = new FlappyBirdGame();
@@ -78,6 +90,7 @@ public class FlappyBirdApp extends Application {
         });
         
         canvas.setOnMouseClicked(event -> {
+             if (isOverlayActive) return; // Ignore game clicks if overlay is on
              if (currentState == GameState.FLAPPY) flappyGame.handleInput();
              else if (currentState == GameState.RUN) runnerGame.handleInput();
         });
@@ -259,25 +272,117 @@ public class FlappyBirdApp extends Application {
         });
 
         menuBox.getChildren().addAll(titleLabel, subLabel, flappyBtn, runBtn, creditBox);
+        
+        // Ensure overlay is hidden on title
+        if (overlayBox != null) overlayBox.setVisible(false);
+        isOverlayActive = false;
+        
         root.setCenter(menuBox); 
     }
 
     private void startFlappyBird() {
         currentState = GameState.FLAPPY;
-        root.setCenter(canvas); 
+        overlayBox.setVisible(false);
+        isOverlayActive = false;
+        root.setCenter(gameStack); 
         canvas.requestFocus();
         flappyGame.resetGame();
+    }
+    
+    // ==========================================
+    // RANKING / GAME OVER OVERLAY
+    // ==========================================
+    private void showGameOverOverlay(String gameMode, int currentScore) {
+        isOverlayActive = true;
+        overlayBox.getChildren().clear();
+        overlayBox.setVisible(true);
+        
+        Label title = new Label("GAME OVER");
+        title.setTextFill(Color.RED);
+        title.setFont(Font.font("Verdana", FontWeight.BOLD, 40));
+        
+        Label scoreLabel = new Label("Score: " + currentScore);
+        scoreLabel.setTextFill(Color.WHITE);
+        scoreLabel.setFont(Font.font("Verdana", FontWeight.BOLD, 24));
+        
+        // Ranking List
+        VBox rankingBox = new VBox(5);
+        rankingBox.setAlignment(Pos.CENTER);
+        rankingBox.setStyle("-fx-padding: 10; -fx-background-color: rgba(255,255,255,0.1); -fx-background-radius: 10;");
+        
+        List<HighScoreManager.ScoreEntry> tops = HighScoreManager.getTopScores(gameMode);
+        Label rankTitle = new Label("--- RANKING ---");
+        rankTitle.setTextFill(Color.YELLOW);
+        rankTitle.setFont(Font.font("Verdana", FontWeight.BOLD, 18));
+        rankingBox.getChildren().add(rankTitle);
+        
+        if (tops.isEmpty()) {
+            Label l = new Label("No records yet");
+            l.setTextFill(Color.LIGHTGRAY);
+            rankingBox.getChildren().add(l);
+        } else {
+            for (int i=0; i<tops.size(); i++) {
+                HighScoreManager.ScoreEntry e = tops.get(i);
+                Label l = new Label((i+1) + ". " + e.name + " : " + e.score);
+                l.setTextFill(Color.WHITE);
+                l.setFont(Font.font("Verdana", 14));
+                rankingBox.getChildren().add(l);
+            }
+        }
+        
+        // Input Area
+        HBox inputBox = new HBox(10);
+        inputBox.setAlignment(Pos.CENTER);
+        
+        TextField nameField = new TextField();
+        nameField.setPromptText("Enter Name");
+        nameField.setPrefWidth(150);
+        
+        Button registerBtn = new Button("登録");
+        registerBtn.setOnAction(e -> {
+            String name = nameField.getText().trim();
+            if (name.isEmpty()) name = "NoName";
+            
+            HighScoreManager.submitScore(gameMode, name, currentScore);
+            // Refresh
+            showGameOverOverlay(gameMode, currentScore);
+        });
+        
+        inputBox.getChildren().addAll(nameField, registerBtn);
+        
+        // Buttons
+        HBox btnBox = new HBox(20);
+        btnBox.setAlignment(Pos.CENTER);
+        
+        Button retryBtn = new Button("リトライ");
+        retryBtn.setOnAction(e -> {
+            if (gameMode.equals("flappy")) {
+                startFlappyBird();
+            } else {
+                startRunnerGame();
+            }
+        });
+        
+        Button titleBtn = new Button("タイトルへ");
+        titleBtn.setOnAction(e -> showTitleScreen());
+        
+        btnBox.getChildren().addAll(retryBtn, titleBtn);
+        
+        overlayBox.getChildren().addAll(title, scoreLabel, rankingBox, inputBox, btnBox);
     }
 
     private void startRunnerGame() {
         currentState = GameState.RUN;
-        root.setCenter(canvas);
+        overlayBox.setVisible(false);
+        isOverlayActive = false;
+        root.setCenter(gameStack);
         canvas.requestFocus();
         runnerGame.resetGame();
+        // runnerGame.isRunning = true; // Wait for input to start?
     }
 
     private void update() {
-        if (root.getCenter() != canvas) return; 
+        if (currentState == GameState.TITLE) return; 
 
         if (currentState == GameState.FLAPPY) {
             flappyGame.update();
@@ -287,7 +392,7 @@ public class FlappyBirdApp extends Application {
     }
 
     private void render() {
-        if (root.getCenter() != canvas) return;
+        if (currentState == GameState.TITLE) return;
 
         // Clear
         gc.clearRect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -479,8 +584,8 @@ public class FlappyBirdApp extends Application {
             isGameOver = true;
             isRunning = false;
             SoundManager.playGameOver();
-            HighScoreManager.setHighScore("flappy", score);
-            highScore = HighScoreManager.getHighScore("flappy");
+            // Show Overlay
+            showGameOverOverlay("flappy", score);
         }
 
         void render(GraphicsContext gc) {
@@ -531,27 +636,8 @@ public class FlappyBirdApp extends Application {
                 gc.fillText(tEsc, (WINDOW_WIDTH - wEsc) / 2, 350);
             }
             if (isGameOver) {
-                gc.setFill(Color.RED);
-                Font fBig = Font.font("Verdana", FontWeight.BOLD, 50);
-                gc.setFont(fBig);
-                String tOver = "ゲームオーバー";
-                Text txtOver = new Text(tOver); txtOver.setFont(fBig);
-                double wOver = txtOver.getLayoutBounds().getWidth();
-                gc.fillText(tOver, (WINDOW_WIDTH - wOver) / 2, 250);
-
-                gc.setFill(Color.WHITE);
-                Font fNormal = Font.font("Verdana", FontWeight.BOLD, 24);
-                gc.setFont(fNormal);
-                
-                String tRestart = "スペースか上矢印でリスタート";
-                Text txtRestart = new Text(tRestart); txtRestart.setFont(fNormal);
-                double wRestart = txtRestart.getLayoutBounds().getWidth();
-                gc.fillText(tRestart, (WINDOW_WIDTH - wRestart) / 2, 360);
-                
-                String tEsc = "ESCでタイトルへ";
-                Text txtEsc = new Text(tEsc); txtEsc.setFont(fNormal);
-                double wEsc = txtEsc.getLayoutBounds().getWidth();
-                gc.fillText(tEsc, (WINDOW_WIDTH - wEsc) / 2, 400);
+                // Overlay is shown, do nothing here regarding text
+                // gc.setFill(Color.RED); ...
             }
         }
     }
@@ -730,8 +816,7 @@ public class FlappyBirdApp extends Application {
                 if (checkCollision(obs)) {
                     isGameOver = true;
                     SoundManager.playGameOver();
-                    HighScoreManager.setHighScore("runner", score);
-                    highScore = HighScoreManager.getHighScore("runner");
+                    showGameOverOverlay("runner", score);
                 }
             }
             
@@ -891,34 +976,7 @@ public class FlappyBirdApp extends Application {
             }
             
             if (isGameOver) {
-                gc.setFill(Color.RED);
-                Font fOver = Font.font("Verdana", FontWeight.BOLD, 50);
-                gc.setFont(fOver);
-                String tOver = "ゲームオーバー";
-                Text txtOver = new Text(tOver); txtOver.setFont(fOver);
-                double wOver = txtOver.getLayoutBounds().getWidth();
-                gc.fillText(tOver, (WINDOW_WIDTH - wOver) / 2, 250);
-
-                Font fNormal = Font.font("Verdana", FontWeight.BOLD, 20);
-                gc.setFont(fNormal); 
-                // Set color back to Black or use Dark Gray? Game Over usually Red title, then instructions.
-                // Keeping previous logic which fell through? The previous logic set Fill RED only for "GAME OVER".
-                // Wait, previous code: gc.setFill(Color.RED) then "Game Over". Then gc.setFont(..20) "Restart".
-                // It did NOT reset color to Black/White. So Restart text was RED!
-                // Flappy Bird sets White for instructions. Let's start with Black or White? 
-                // Runner game background is White. So text can be Black (default) or Red (if inherited).
-                // Let's explicitly set a color for instructions.
-                gc.setFill(Color.BLACK); 
-                
-                String tRestart = "上矢印でリスタート";
-                Text txtRestart = new Text(tRestart); txtRestart.setFont(fNormal);
-                double wRestart = txtRestart.getLayoutBounds().getWidth();
-                gc.fillText(tRestart, (WINDOW_WIDTH - wRestart) / 2, 300);
-                
-                String tEsc = "ESCでタイトルへ";
-                Text txtEsc = new Text(tEsc); txtEsc.setFont(fNormal);
-                double wEsc = txtEsc.getLayoutBounds().getWidth();
-                gc.fillText(tEsc, (WINDOW_WIDTH - wEsc) / 2, 330);
+               // Handled by Overlay
             }
         }
         
