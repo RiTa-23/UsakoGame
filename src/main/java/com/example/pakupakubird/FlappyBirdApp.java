@@ -337,7 +337,7 @@ public class FlappyBirdApp extends Application {
 
             gc.setFill(Color.BLACK);
             gc.setFont(Font.font("Verdana", FontWeight.BOLD, 24));
-            gc.fillText("スコア: " + score, 20, 40);
+            gc.fillText("スコア: " + score, WINDOW_WIDTH - 150, 40);
 
             if (!isRunning && !isGameOver) {
                 gc.setFill(Color.WHITE);
