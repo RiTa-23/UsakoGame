@@ -14,6 +14,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 
 import java.util.ArrayList;
@@ -118,7 +119,7 @@ public class FlappyBirdApp extends Application {
         menuBox.setStyle("-fx-background-color: rgba(255, 255, 255, 0.8); -fx-padding: 50;");
         
         Label titleLabel = new Label("ゲーム選択");
-        titleLabel.setFont(Font.font("Arial", 30));
+        titleLabel.setFont(Font.font("Verdana", FontWeight.BOLD, 30));
         
         Button flappyBtn = new Button("Flappy Usako");
         flappyBtn.setStyle("-fx-font-size: 20px; -fx-min-width: 200px;");
@@ -330,20 +331,20 @@ public class FlappyBirdApp extends Application {
             else { gc.setFill(Color.YELLOW); gc.fillRect(birdX, birdY, birdDisplayWidth, birdDisplayHeight); }
 
             gc.setFill(Color.BLACK);
-            gc.setFont(Font.font("Arial", 24));
+            gc.setFont(Font.font("Verdana", FontWeight.BOLD, 24));
             gc.fillText("スコア: " + score, 20, 40);
 
             if (!isRunning && !isGameOver) {
                 gc.setFill(Color.WHITE);
-                gc.setFont(Font.font("Arial", 30));
-                gc.fillText("スペースか上矢印でスタート", 150, 350);
+                gc.setFont(Font.font("Verdana", FontWeight.BOLD, 30));
+                gc.fillText("スペース/クリック/上でスタート", 80, 350);
             }
             if (isGameOver) {
                 gc.setFill(Color.RED);
-                gc.setFont(Font.font("Arial", 50));
-                gc.fillText("ゲームオーバー", 130, 300);
+                gc.setFont(Font.font("Verdana", FontWeight.BOLD, 50));
+                gc.fillText("ゲームオーバー", 100, 300);
                 gc.setFill(Color.WHITE);
-                gc.setFont(Font.font("Arial", 24));
+                gc.setFont(Font.font("Verdana", FontWeight.BOLD, 24));
                 gc.fillText("スコア: " + score, 240, 350);
                 gc.fillText("スペースでリスタート", 180, 390);
             }
@@ -597,19 +598,19 @@ public class FlappyBirdApp extends Application {
             
             // UI
             gc.setFill(Color.BLACK);
-            gc.setFont(Font.font("Arial", 20));
+            gc.setFont(Font.font("Verdana", FontWeight.BOLD, 20));
             gc.fillText("スコア: " + score, WINDOW_WIDTH - 150, 40);
             
             if (!isRunning && !isGameOver) {
-                 gc.setFont(Font.font("Arial", 40));
-                 gc.fillText("上矢印でスタート", 130, 200);
+                 gc.setFont(Font.font("Verdana", FontWeight.BOLD, 40));
+                 gc.fillText("上キーでスタート", 130, 200);
             }
             if (isGameOver) {
                 gc.setFill(Color.RED);
-                gc.setFont(Font.font("Arial", 50));
-                gc.fillText("ゲームオーバー", 130, 250);
-                gc.setFont(Font.font("Arial", 20));
-                gc.fillText("上矢印でリスタート", 200, 300);
+                gc.setFont(Font.font("Verdana", FontWeight.BOLD, 50));
+                gc.fillText("ゲームオーバー", 120, 250);
+                gc.setFont(Font.font("Verdana", FontWeight.BOLD, 20));
+                gc.fillText("上キーでリスタート", 200, 300);
                 gc.fillText("ESC/Menuで終了", 210, 330);
             }
         }
