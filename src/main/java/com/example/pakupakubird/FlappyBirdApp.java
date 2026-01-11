@@ -544,8 +544,9 @@ public class FlappyBirdApp extends Application {
                 }
             }
             
+
             if (tick % 10 == 0) score++;
-            if (tick % 1000 == 0) obsSpeed += 0.5;
+            if (tick % 300 == 0) obsSpeed += 0.5;
         }
 
         void spawnObstacle() {
@@ -557,9 +558,14 @@ public class FlappyBirdApp extends Application {
             double oh = 60; 
             
             if (isSky) {
-                oy = groundY - 115; 
+                // Random height: 105 to 130 (Dodgable by crouching, but hits head if standing)
+                // groundY = 500. 
+                // offset 105 -> oy=395, oh=45 -> bottom=440. CrouchTop=445. Safe (445 > 440).
+                // offset 130 -> oy=370, oh=45 -> bottom=415. StandTop=410. Hits Head (410 < 415).
+                double offset = 50 + random.nextInt(100);
+                oy = groundY - offset; 
                 oh = 45;
-                ow = 45; 
+                ow = 45;  
             } else {
                 oy = groundY - 60;
                 oh = 60;
