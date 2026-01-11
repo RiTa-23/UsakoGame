@@ -330,9 +330,11 @@ public class FlappyBirdApp extends Application {
         }
 
         void handleKeyPress(KeyCode code) {
-            if (isGameOver && code == KeyCode.ESCAPE) {
-                showTitleScreen();
-                return;
+            if (code == KeyCode.ESCAPE) {
+                 if (isGameOver || !isRunning) {
+                     showTitleScreen();
+                     return;
+                 }
             }
             if (code == KeyCode.SPACE || code == KeyCode.UP) {
                 handleInput();
@@ -441,6 +443,13 @@ public class FlappyBirdApp extends Application {
                 Text t = new Text(text); t.setFont(f);
                 double w = t.getLayoutBounds().getWidth();
                 gc.fillText(text, (WINDOW_WIDTH - w) / 2, 300);
+                
+                Font fEsc = Font.font("Verdana", FontWeight.BOLD, 20);
+                gc.setFont(fEsc);
+                String tEsc = "ESCでタイトルへ";
+                Text txtEsc = new Text(tEsc); txtEsc.setFont(fEsc);
+                double wEsc = txtEsc.getLayoutBounds().getWidth();
+                gc.fillText(tEsc, (WINDOW_WIDTH - wEsc) / 2, 350);
             }
             if (isGameOver) {
                 gc.setFill(Color.RED);
@@ -579,6 +588,10 @@ public class FlappyBirdApp extends Application {
             }
             if (!isRunning) {
                  if (code == KeyCode.UP || code == KeyCode.DOWN) isRunning = true;
+                 if (code == KeyCode.ESCAPE) {
+                     showTitleScreen();
+                     return;
+                 }
             }
             
             if (isRunning) {
@@ -764,6 +777,11 @@ public class FlappyBirdApp extends Application {
                  Text txtInst = new Text(tInst); txtInst.setFont(fInst);
                  double wInst = txtInst.getLayoutBounds().getWidth();
                  gc.fillText(tInst, (WINDOW_WIDTH - wInst) / 2, 250);
+                 
+                 String tEsc = "ESCでタイトルへ";
+                 Text txtEsc = new Text(tEsc); txtEsc.setFont(fInst);
+                 double wEsc = txtEsc.getLayoutBounds().getWidth();
+                 gc.fillText(tEsc, (WINDOW_WIDTH - wEsc) / 2, 290);
             }
             if (isGameOver) {
                 gc.setFill(Color.RED);
