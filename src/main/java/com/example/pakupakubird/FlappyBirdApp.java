@@ -218,7 +218,13 @@ public class FlappyBirdApp extends Application {
         rPane.getChildren().addAll(rView, rLabel);
         runBtn.setGraphic(rPane);
         
-        menuBox.getChildren().addAll(titleLabel, subLabel, flappyBtn, runBtn);
+        // Developer Credit
+        Label creditLabel = new Label("Created by Rita");
+        creditLabel.setFont(Font.font("Verdana", FontWeight.NORMAL, 14));
+        creditLabel.setTextFill(Color.GRAY);
+        VBox.setMargin(creditLabel, new javafx.geometry.Insets(20, 0, 0, 0));
+
+        menuBox.getChildren().addAll(titleLabel, subLabel, flappyBtn, runBtn, creditLabel);
         root.setCenter(menuBox); 
     }
 
