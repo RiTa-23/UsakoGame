@@ -111,7 +111,7 @@ public class FlappyBirdApp extends Application {
         Menu helpMenu = new Menu("ヘルプ");
         MenuItem aboutItem = new MenuItem("遊び方");
         aboutItem.setOnAction(e -> showHelp());
-        MenuItem infoItem = new MenuItem("うさことは");
+        MenuItem infoItem = new MenuItem("うさこについて");
         infoItem.setOnAction(e -> showUsakoInfo());
         helpMenu.getItems().addAll(aboutItem, infoItem);
         
@@ -303,7 +303,7 @@ public class FlappyBirdApp extends Application {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("遊び方");
         alert.setHeaderText("操作方法");
-        alert.setContentText("Flappy Usako: スペース/クリック/上矢印でジャンプ\nUsako Run!: 上矢印=ジャンプ, 下矢印=しゃがむ");
+        alert.setContentText("Flappy Usako： スペース/クリック/上矢印でジャンプ\nUsako Run!： 上矢印=ジャンプ, 下矢印=しゃがむ");
         alert.showAndWait();
     }
 
