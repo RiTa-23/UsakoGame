@@ -4,6 +4,7 @@ import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
+import javafx.scene.Cursor;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -248,6 +249,12 @@ public class FlappyBirdApp extends Application {
         creditLabel.setFont(Font.font("Verdana", FontWeight.NORMAL, 14));
         creditLabel.setTextFill(Color.GRAY);
         creditBox.getChildren().add(creditLabel);
+
+        // Make clickable
+        creditBox.setCursor(Cursor.HAND);
+        creditBox.setOnMouseClicked(e -> {
+            getHostServices().showDocument("https://rita-s-portfolio.vercel.app/");
+        });
 
         menuBox.getChildren().addAll(titleLabel, subLabel, flappyBtn, runBtn, creditBox);
         root.setCenter(menuBox); 
