@@ -19,35 +19,34 @@ public class SoundManager {
         playNoise(400); 
     }
 
-    // Synthesize a tone with frequency slide
+    // Synthesize a tone with frequency slide (16-bit)
     private static void playTone(double startHz, double endHz, int ms, double volume) {
         new Thread(() -> {
             try {
                 float sampleRate = 44100;
                 int numSamples = (int)(sampleRate * ms / 1000);
-                byte[] buf = new byte[numSamples];
+                byte[] buf = new byte[numSamples * 2]; // 16-bit needs 2 bytes per sample
                 
                 double phase = 0;
                 for (int i=0; i<numSamples; i++) {
                     double progress = i / (double)numSamples;
                     double currentFreq = startHz + (endHz - startHz) * progress;
                     
-                    // Phase increment amount
                     double pitch = currentFreq / sampleRate;
                     phase += pitch;
                     
-                    // Sine wave
                     double angle = 2.0 * Math.PI * phase;
                     double value = Math.sin(angle);
                     
-                    // Square wave option (retro style)
-                    // if (value > 0) value = 1; else value = -1; 
-                    
-                    // Apply volume and decay
-                    double vol = volume * 100; // max ~127
+                    // Simple decay
                     double decay = (1.0 - progress);
                     
-                    buf[i] = (byte)(value * vol * decay);
+                    // Scale to 16-bit range (max 32767)
+                    short val = (short)(value * volume * 20000 * decay); 
+                    
+                    // Little Endian
+                    buf[2*i] = (byte)(val & 0xFF);
+                    buf[2*i+1] = (byte)((val >> 8) & 0xFF);
                 }
                 
                 playRaw(buf, sampleRate);
@@ -57,21 +56,28 @@ public class SoundManager {
         }).start();
     }
     
-    // Synthesize noise
+    // Synthesize noise (16-bit)
     private static void playNoise(int ms) {
         new Thread(() -> {
             try {
                 float sampleRate = 44100;
                 int numSamples = (int)(sampleRate * ms / 1000);
-                byte[] buf = new byte[numSamples];
+                byte[] buf = new byte[numSamples * 2];
                 
                 java.util.Random r = new java.util.Random();
-                r.nextBytes(buf);
                 
-                for (int i=0; i<buf.length; i++) {
-                     // Simple decay
-                     double progress = (double)i / buf.length;
-                     buf[i] = (byte)(buf[i] * 0.5 * (1.0 - progress));
+                for (int i=0; i<numSamples; i++) {
+                     // White noise: -1.0 to 1.0
+                     double value = (r.nextDouble() * 2.0) - 1.0;
+                     
+                     // Decay
+                     double progress = (double)i / numSamples;
+                     double decay = 1.0 - progress;
+                     
+                     short val = (short)(value * 0.2 * 20000 * decay);
+                     
+                     buf[2*i] = (byte)(val & 0xFF);
+                     buf[2*i+1] = (byte)((val >> 8) & 0xFF);
                 }
 
                 playRaw(buf, sampleRate);
@@ -82,7 +88,8 @@ public class SoundManager {
     }
     
     private static void playRaw(byte[] data, float sampleRate) throws LineUnavailableException {
-        AudioFormat af = new AudioFormat(sampleRate, 8, 1, true, false);
+        // 16-bit PCM, Mono, Signed, Little Endian
+        AudioFormat af = new AudioFormat(sampleRate, 16, 1, true, false);
         SourceDataLine sdl = AudioSystem.getSourceDataLine(af);
         sdl.open(af);
         sdl.start();
