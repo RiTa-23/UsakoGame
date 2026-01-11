@@ -239,6 +239,10 @@ public class FlappyBirdApp extends Application {
         }
 
         void handleKeyPress(KeyCode code) {
+            if (isGameOver && code == KeyCode.ESCAPE) {
+                showTitleScreen();
+                return;
+            }
             if (code == KeyCode.SPACE || code == KeyCode.UP) {
                 handleInput();
             }
@@ -337,7 +341,7 @@ public class FlappyBirdApp extends Application {
             if (!isRunning && !isGameOver) {
                 gc.setFill(Color.WHITE);
                 gc.setFont(Font.font("Verdana", FontWeight.BOLD, 30));
-                gc.fillText("スペース/クリック/上でスタート", 80, 350);
+                gc.fillText("スペース/上矢印でスタート", 80, 350);
             }
             if (isGameOver) {
                 gc.setFill(Color.RED);
@@ -346,7 +350,8 @@ public class FlappyBirdApp extends Application {
                 gc.setFill(Color.WHITE);
                 gc.setFont(Font.font("Verdana", FontWeight.BOLD, 24));
                 gc.fillText("スコア: " + score, 240, 350);
-                gc.fillText("スペースでリスタート", 180, 390);
+                gc.fillText("スペースか上矢印でリスタート", 180, 390);
+                gc.fillText("ESCでタイトルへ", 200, 420);
             }
         }
     }
@@ -439,10 +444,16 @@ public class FlappyBirdApp extends Application {
         }
 
         void handleKeyPress(KeyCode code) {
-            if (isGameOver && code == KeyCode.UP) {
-                resetGame();
-                isRunning = true;
-                return;
+            if (isGameOver) {
+                if (code == KeyCode.UP) {
+                    resetGame();
+                    isRunning = true;
+                    return;
+                }
+                if (code == KeyCode.ESCAPE) {
+                    showTitleScreen();
+                    return;
+                }
             }
             if (!isRunning) {
                  if (code == KeyCode.UP || code == KeyCode.DOWN) isRunning = true;
@@ -603,15 +614,15 @@ public class FlappyBirdApp extends Application {
             
             if (!isRunning && !isGameOver) {
                  gc.setFont(Font.font("Verdana", FontWeight.BOLD, 40));
-                 gc.fillText("上キーでスタート", 130, 200);
+                 gc.fillText("上矢印でスタート", 130, 200);
             }
             if (isGameOver) {
                 gc.setFill(Color.RED);
                 gc.setFont(Font.font("Verdana", FontWeight.BOLD, 50));
                 gc.fillText("ゲームオーバー", 120, 250);
                 gc.setFont(Font.font("Verdana", FontWeight.BOLD, 20));
-                gc.fillText("上キーでリスタート", 200, 300);
-                gc.fillText("ESC/Menuで終了", 210, 330);
+                gc.fillText("上矢印でリスタート", 200, 300);
+                gc.fillText("ESCでタイトルへ", 210, 330);
             }
         }
         
