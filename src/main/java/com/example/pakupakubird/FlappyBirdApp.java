@@ -94,15 +94,15 @@ public class FlappyBirdApp extends Application {
 
     private MenuBar createMenuBar() {
         MenuBar menuBar = new MenuBar();
-        Menu fileMenu = new Menu("Game");
-        MenuItem exitItem = new MenuItem("Exit");
-        exitItem.setOnAction(e -> Platform.exit());
-        MenuItem titleItem = new MenuItem("Back to Title");
+        Menu fileMenu = new Menu("ゲーム");
+        MenuItem titleItem = new MenuItem("タイトルに戻る");
         titleItem.setOnAction(e -> showTitleScreen());
+        MenuItem exitItem = new MenuItem("終了");
+        exitItem.setOnAction(e -> Platform.exit());
         fileMenu.getItems().addAll(titleItem, exitItem);
         
-        Menu helpMenu = new Menu("Help");
-        MenuItem aboutItem = new MenuItem("About");
+        Menu helpMenu = new Menu("ヘルプ");
+        MenuItem aboutItem = new MenuItem("遊び方");
         aboutItem.setOnAction(e -> showHelp());
         helpMenu.getItems().add(aboutItem);
         
@@ -117,7 +117,7 @@ public class FlappyBirdApp extends Application {
         menuBox.setAlignment(Pos.CENTER);
         menuBox.setStyle("-fx-background-color: rgba(255, 255, 255, 0.8); -fx-padding: 50;");
         
-        Label titleLabel = new Label("Select Game");
+        Label titleLabel = new Label("ゲーム選択");
         titleLabel.setFont(Font.font("Arial", 30));
         
         Button flappyBtn = new Button("Flappy Usako");
@@ -171,9 +171,9 @@ public class FlappyBirdApp extends Application {
 
     private void showHelp() {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Help");
-        alert.setHeaderText("Controls");
-        alert.setContentText("Flappy Bird: Space/Click to Jump\nRun Game: Up=Jump, Down=Crouch");
+        alert.setTitle("遊び方");
+        alert.setHeaderText("操作方法");
+        alert.setContentText("Flappy Usako: スペース/クリック/上矢印でジャンプ\nRun Usako: 上矢印=ジャンプ, 下矢印=しゃがむ");
         alert.showAndWait();
     }
 
@@ -331,21 +331,21 @@ public class FlappyBirdApp extends Application {
 
             gc.setFill(Color.BLACK);
             gc.setFont(Font.font("Arial", 24));
-            gc.fillText("Score: " + score, 20, 40);
+            gc.fillText("スコア: " + score, 20, 40);
 
             if (!isRunning && !isGameOver) {
                 gc.setFill(Color.WHITE);
                 gc.setFont(Font.font("Arial", 30));
-                gc.fillText("Press Space/Click/Up to Start", 150, 350);
+                gc.fillText("スペースか上矢印でスタート", 150, 350);
             }
             if (isGameOver) {
                 gc.setFill(Color.RED);
                 gc.setFont(Font.font("Arial", 50));
-                gc.fillText("GAME OVER", 150, 300);
+                gc.fillText("ゲームオーバー", 130, 300);
                 gc.setFill(Color.WHITE);
                 gc.setFont(Font.font("Arial", 24));
-                gc.fillText("Score: " + score, 240, 350);
-                gc.fillText("Press Space to Restart", 170, 390);
+                gc.fillText("スコア: " + score, 240, 350);
+                gc.fillText("スペースでリスタート", 180, 390);
             }
         }
     }
@@ -598,19 +598,19 @@ public class FlappyBirdApp extends Application {
             // UI
             gc.setFill(Color.BLACK);
             gc.setFont(Font.font("Arial", 20));
-            gc.fillText("Score: " + score, WINDOW_WIDTH - 150, 40);
+            gc.fillText("スコア: " + score, WINDOW_WIDTH - 150, 40);
             
             if (!isRunning && !isGameOver) {
                  gc.setFont(Font.font("Arial", 40));
-                 gc.fillText("PRESS UP to START", 100, 200);
+                 gc.fillText("上矢印でスタート", 130, 200);
             }
             if (isGameOver) {
                 gc.setFill(Color.RED);
                 gc.setFont(Font.font("Arial", 50));
-                gc.fillText("GAME OVER", 150, 250);
+                gc.fillText("ゲームオーバー", 130, 250);
                 gc.setFont(Font.font("Arial", 20));
-                gc.fillText("Press UP to Restart", 200, 300);
-                gc.fillText("Press ESC/Menu to Quit", 190, 330);
+                gc.fillText("上矢印でリスタート", 200, 300);
+                gc.fillText("ESC/Menuで終了", 210, 330);
             }
         }
         
