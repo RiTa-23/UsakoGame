@@ -341,9 +341,9 @@ public class FlappyBirdApp extends Application {
 
             gc.setFill(Color.BLACK);
             gc.setFont(Font.font("Verdana", FontWeight.BOLD, 24));
-            gc.fillText("スコア: " + score, WINDOW_WIDTH - 150, 40);
+            gc.fillText("Score: " + score, WINDOW_WIDTH - 150, 40);
             gc.setFont(Font.font("Verdana", FontWeight.BOLD, 18));
-            gc.fillText("最高記録: " + highScore, WINDOW_WIDTH - 150, 70);
+            gc.fillText("High Score: " + highScore, WINDOW_WIDTH - 150, 70);
 
             if (!isRunning && !isGameOver) {
                 gc.setFill(Color.WHITE);
@@ -367,7 +367,7 @@ public class FlappyBirdApp extends Application {
                 Font fNormal = Font.font("Verdana", FontWeight.BOLD, 24);
                 gc.setFont(fNormal);
                 
-                String tScore = "スコア: " + score;
+                String tScore = "Score: " + score;
                 Text txtScore = new Text(tScore); txtScore.setFont(fNormal);
                 double wScore = txtScore.getLayoutBounds().getWidth();
                 gc.fillText(tScore, (WINDOW_WIDTH - wScore) / 2, 320);
@@ -644,9 +644,9 @@ public class FlappyBirdApp extends Application {
             gc.setFill(Color.BLACK);
             gc.setFont(Font.font("Verdana", FontWeight.BOLD, 20));
             gc.setFont(Font.font("Verdana", FontWeight.BOLD, 20));
-            gc.fillText("スコア: " + score, WINDOW_WIDTH - 150, 40);
+            gc.fillText("Score: " + score, WINDOW_WIDTH - 150, 40);
             gc.setFont(Font.font("Verdana", FontWeight.BOLD, 18));
-            gc.fillText("最高記録: " + highScore, WINDOW_WIDTH - 150, 70);
+            gc.fillText("High Score: " + highScore, WINDOW_WIDTH - 150, 70);
             
             if (!isRunning && !isGameOver) {
                  Font fStart = Font.font("Verdana", FontWeight.BOLD, 40);
