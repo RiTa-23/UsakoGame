@@ -111,7 +111,9 @@ public class FlappyBirdApp extends Application {
         Menu helpMenu = new Menu("ヘルプ");
         MenuItem aboutItem = new MenuItem("遊び方");
         aboutItem.setOnAction(e -> showHelp());
-        helpMenu.getItems().add(aboutItem);
+        MenuItem infoItem = new MenuItem("うさことは");
+        infoItem.setOnAction(e -> showUsakoInfo());
+        helpMenu.getItems().addAll(aboutItem, infoItem);
         
         menuBar.getMenus().addAll(fileMenu, helpMenu);
         return menuBar;
@@ -302,6 +304,41 @@ public class FlappyBirdApp extends Application {
         alert.setTitle("遊び方");
         alert.setHeaderText("操作方法");
         alert.setContentText("Flappy Usako: スペース/クリック/上矢印でジャンプ\nUsako Run!: 上矢印=ジャンプ, 下矢印=しゃがむ");
+        alert.showAndWait();
+    }
+
+    private void showUsakoInfo() {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("うさこについて");
+        alert.setHeaderText("キャラクター紹介");
+        
+        HBox content = new HBox(20);
+        content.setAlignment(Pos.CENTER_LEFT);
+        
+        // Image
+        try {
+            Image img = new Image(getClass().getResourceAsStream("usako_normal.png"));
+            ImageView view = new ImageView(img);
+            view.setFitWidth(100);
+            view.setPreserveRatio(true);
+            content.getChildren().add(view);
+        } catch (Exception e) {
+            // Ignore
+        }
+        
+        // Text
+        String desc = "福岡工業大学の情報技術研究部、通称じょぎと呼ばれる情報系サークルの公式キャラクター。\n" +
+                      "2025年に創設されたうさこ部（うさこに関する歴史調査部）の調査により、2004年から存在しているキャラクターであることが判明した。実はかなり歴史の長いキャラクターであり、何代も受け継がれて姿を変えている。\n" +
+                      "初期時点では本ゲームのうさこが抱えているぬいぐるみが本来の姿であったが、2014年に擬人化がなされた模様。\n" +
+                      "実は性別は男であるとか...";
+        
+        Label label = new Label(desc);
+        label.setWrapText(true);
+        label.setMaxWidth(400);
+        
+        content.getChildren().add(label);
+        
+        alert.getDialogPane().setContent(content);
         alert.showAndWait();
     }
 
