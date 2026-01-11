@@ -756,6 +756,14 @@ public class FlappyBirdApp extends Application {
                  Text txtStart = new Text(tStart); txtStart.setFont(fStart);
                  double wStart = txtStart.getLayoutBounds().getWidth();
                  gc.fillText(tStart, (WINDOW_WIDTH - wStart) / 2, 200);
+                 
+                 gc.setFill(Color.BLACK);
+                 Font fInst = Font.font("Verdana", FontWeight.BOLD, 20);
+                 gc.setFont(fInst);
+                 String tInst = "上矢印: ジャンプ / 下矢印: しゃがむ";
+                 Text txtInst = new Text(tInst); txtInst.setFont(fInst);
+                 double wInst = txtInst.getLayoutBounds().getWidth();
+                 gc.fillText(tInst, (WINDOW_WIDTH - wInst) / 2, 250);
             }
             if (isGameOver) {
                 gc.setFill(Color.RED);
