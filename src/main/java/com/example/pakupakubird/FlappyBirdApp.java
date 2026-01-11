@@ -12,8 +12,10 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.Circle;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
@@ -219,12 +221,35 @@ public class FlappyBirdApp extends Application {
         runBtn.setGraphic(rPane);
         
         // Developer Credit
+        HBox creditBox = new HBox(10);
+        creditBox.setAlignment(Pos.CENTER);
+        VBox.setMargin(creditBox, new javafx.geometry.Insets(20, 0, 0, 0));
+
+        try {
+            // Load image with specific size (60x60 for Retina support on 30x30 view) and smoothing enabled
+            Image iconImg = new Image(getClass().getResourceAsStream("ritaneko.png"), 60, 60, true, true);
+            if (iconImg != null) {
+                ImageView iconView = new ImageView(iconImg);
+                iconView.setFitWidth(30);
+                iconView.setFitHeight(30);
+                iconView.setSmooth(true); // Ensure smoothing is applied during rendering
+                
+                // Circular Clip
+                Circle clip = new Circle(15, 15, 15);
+                iconView.setClip(clip);
+                
+                creditBox.getChildren().add(iconView);
+            }
+        } catch (Exception e) {
+            // Ignore if icon fails
+        }
+
         Label creditLabel = new Label("Created by Rita");
         creditLabel.setFont(Font.font("Verdana", FontWeight.NORMAL, 14));
         creditLabel.setTextFill(Color.GRAY);
-        VBox.setMargin(creditLabel, new javafx.geometry.Insets(20, 0, 0, 0));
+        creditBox.getChildren().add(creditLabel);
 
-        menuBox.getChildren().addAll(titleLabel, subLabel, flappyBtn, runBtn, creditLabel);
+        menuBox.getChildren().addAll(titleLabel, subLabel, flappyBtn, runBtn, creditBox);
         root.setCenter(menuBox); 
     }
 
