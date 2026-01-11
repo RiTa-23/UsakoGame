@@ -293,6 +293,10 @@ public class FlappyBirdApp extends Application {
     // RANKING / GAME OVER OVERLAY
     // ==========================================
     private void showGameOverOverlay(String gameMode, int currentScore) {
+        showGameOverOverlay(gameMode, currentScore, false);
+    }
+
+    private void showGameOverOverlay(String gameMode, int currentScore, boolean isSubmitted) {
         isOverlayActive = true;
         overlayBox.getChildren().clear();
         overlayBox.setVisible(true);
@@ -330,25 +334,35 @@ public class FlappyBirdApp extends Application {
             }
         }
         
-        // Input Area
-        HBox inputBox = new HBox(10);
-        inputBox.setAlignment(Pos.CENTER);
+        overlayBox.getChildren().addAll(title, scoreLabel, rankingBox);
         
-        TextField nameField = new TextField();
-        nameField.setPromptText("Enter Name");
-        nameField.setPrefWidth(150);
-        
-        Button registerBtn = new Button("登録");
-        registerBtn.setOnAction(e -> {
-            String name = nameField.getText().trim();
-            if (name.isEmpty()) name = "NoName";
+        // Input Area (Only if not submitted)
+        if (!isSubmitted) {
+            HBox inputBox = new HBox(10);
+            inputBox.setAlignment(Pos.CENTER);
             
-            HighScoreManager.submitScore(gameMode, name, currentScore);
-            // Refresh
-            showGameOverOverlay(gameMode, currentScore);
-        });
-        
-        inputBox.getChildren().addAll(nameField, registerBtn);
+            TextField nameField = new TextField();
+            nameField.setPromptText("Enter Name");
+            nameField.setPrefWidth(150);
+            
+            Button registerBtn = new Button("登録");
+            registerBtn.setOnAction(e -> {
+                String name = nameField.getText().trim();
+                if (name.isEmpty()) name = "NoName";
+                
+                HighScoreManager.submitScore(gameMode, name, currentScore);
+                // Refresh with submitted flag
+                showGameOverOverlay(gameMode, currentScore, true);
+            });
+            
+            inputBox.getChildren().addAll(nameField, registerBtn);
+            overlayBox.getChildren().add(inputBox);
+        } else {
+            Label successLabel = new Label("Registered!");
+            successLabel.setTextFill(Color.LIGHTGREEN);
+            successLabel.setFont(Font.font("Verdana", FontWeight.BOLD, 14));
+            overlayBox.getChildren().add(successLabel);
+        }
         
         // Buttons
         HBox btnBox = new HBox(20);
@@ -368,7 +382,7 @@ public class FlappyBirdApp extends Application {
         
         btnBox.getChildren().addAll(retryBtn, titleBtn);
         
-        overlayBox.getChildren().addAll(title, scoreLabel, rankingBox, inputBox, btnBox);
+        overlayBox.getChildren().add(btnBox);
     }
 
     private void startRunnerGame() {
