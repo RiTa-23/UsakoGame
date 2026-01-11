@@ -126,7 +126,7 @@ public class FlappyBirdApp extends Application {
         flappyBtn.setStyle("-fx-font-size: 20px; -fx-min-width: 200px;");
         flappyBtn.setOnAction(e -> startFlappyBird());
         
-        Button runBtn = new Button("Run Usako");
+        Button runBtn = new Button("Usako Run!");
         runBtn.setStyle("-fx-font-size: 20px; -fx-min-width: 200px;");
         runBtn.setOnAction(e -> startRunnerGame());
         
@@ -175,7 +175,7 @@ public class FlappyBirdApp extends Application {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("遊び方");
         alert.setHeaderText("操作方法");
-        alert.setContentText("Flappy Usako: スペース/クリック/上矢印でジャンプ\nRun Usako: 上矢印=ジャンプ, 下矢印=しゃがむ");
+        alert.setContentText("Flappy Usako: スペース/クリック/上矢印でジャンプ\nUsako Run!: 上矢印=ジャンプ, 下矢印=しゃがむ");
         alert.showAndWait();
     }
 
