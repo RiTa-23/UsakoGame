@@ -94,7 +94,7 @@ public class FlappyBirdApp extends Application {
 
     private MenuBar createMenuBar() {
         MenuBar menuBar = new MenuBar();
-        Menu fileMenu = new Menu("File");
+        Menu fileMenu = new Menu("Game");
         MenuItem exitItem = new MenuItem("Exit");
         exitItem.setOnAction(e -> Platform.exit());
         MenuItem titleItem = new MenuItem("Back to Title");
