@@ -600,6 +600,9 @@ public class FlappyBirdApp extends Application {
         Random random = new Random();
         double obsSpeed = 6;
         int spawnTimer = 0;
+        
+        String milestoneMsg = "";
+        int milestoneTimer = 0;
 
         RunnerGame() {
             loadAssets();
@@ -646,6 +649,8 @@ public class FlappyBirdApp extends Application {
             isRunning = false;
             isGameOver = false;
             isCrouching = false;
+            milestoneMsg = "";
+            milestoneTimer = 0;
         }
 
         void handleKeyPress(KeyCode code) {
@@ -731,8 +736,14 @@ public class FlappyBirdApp extends Application {
 
             if (tick % 10 == 0) {
                  score++;
-                 if (score % 100 == 0) SoundManager.playScore();
+                 if (score % 100 == 0) {
+                     SoundManager.playScore();
+                     milestoneMsg = score + " POINTS!";
+                     milestoneTimer = 60; // Display for ~1 second (60 frames)
+                 }
             }
+            if (milestoneTimer > 0) milestoneTimer--;
+            
             if (tick % 300 == 0) obsSpeed += 0.5;
         }
 
@@ -862,6 +873,21 @@ public class FlappyBirdApp extends Application {
                  double wEsc = txtEsc.getLayoutBounds().getWidth();
                  gc.fillText(tEsc, (WINDOW_WIDTH - wEsc) / 2, 290);
             }
+            
+            // Milestone Text
+            if (isRunning && !isGameOver && milestoneTimer > 0) {
+                gc.setFill(Color.ORANGE);
+                Font fMile = Font.font("Verdana", FontWeight.BOLD, 40);
+                gc.setFont(fMile);
+                
+                Text tMile = new Text(milestoneMsg); tMile.setFont(fMile);
+                double wMile = tMile.getLayoutBounds().getWidth();
+                double x = (WINDOW_WIDTH - wMile) / 2;
+                double y = 150;
+                
+                gc.fillText(milestoneMsg, x, y);
+            }
+            
             if (isGameOver) {
                 gc.setFill(Color.RED);
                 Font fOver = Font.font("Verdana", FontWeight.BOLD, 50);
