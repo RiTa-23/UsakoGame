@@ -664,9 +664,11 @@ public class FlappyBirdApp extends Application {
                     showTitleScreen();
                     return;
                 }
+                // Do not allow other keys to fall through and change state
+                return;
             }
             if (!isRunning) {
-                 if (code == KeyCode.UP || code == KeyCode.DOWN) isRunning = true;
+                 if (code == KeyCode.UP) isRunning = true;
                  if (code == KeyCode.ESCAPE) {
                      showTitleScreen();
                      return;
@@ -939,7 +941,7 @@ public class FlappyBirdApp extends Application {
                 if (jumpAnim[frame] != null) return jumpAnim[frame];
             }
             // Squat
-            if (isCrouching) {
+            if (isCrouching && !isGameOver) {
                 // Animation
                 int frame = ((int)animTick / 5) % 5;
                 if (squatAnim[frame] != null) return squatAnim[frame];
