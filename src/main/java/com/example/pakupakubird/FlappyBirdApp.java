@@ -15,6 +15,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 import java.util.ArrayList;
@@ -340,18 +341,40 @@ public class FlappyBirdApp extends Application {
 
             if (!isRunning && !isGameOver) {
                 gc.setFill(Color.WHITE);
-                gc.setFont(Font.font("Verdana", FontWeight.BOLD, 30));
-                gc.fillText("スペース/上矢印でスタート", 80, 350);
+                Font f = Font.font("Verdana", FontWeight.BOLD, 30);
+                gc.setFont(f);
+                String text = "スペース/上矢印でスタート";
+                Text t = new Text(text); t.setFont(f);
+                double w = t.getLayoutBounds().getWidth();
+                gc.fillText(text, (WINDOW_WIDTH - w) / 2, 300);
             }
             if (isGameOver) {
                 gc.setFill(Color.RED);
-                gc.setFont(Font.font("Verdana", FontWeight.BOLD, 50));
-                gc.fillText("ゲームオーバー", 100, 300);
+                Font fBig = Font.font("Verdana", FontWeight.BOLD, 50);
+                gc.setFont(fBig);
+                String tOver = "ゲームオーバー";
+                Text txtOver = new Text(tOver); txtOver.setFont(fBig);
+                double wOver = txtOver.getLayoutBounds().getWidth();
+                gc.fillText(tOver, (WINDOW_WIDTH - wOver) / 2, 250);
+
                 gc.setFill(Color.WHITE);
-                gc.setFont(Font.font("Verdana", FontWeight.BOLD, 24));
-                gc.fillText("スコア: " + score, 240, 350);
-                gc.fillText("スペースか上矢印でリスタート", 180, 390);
-                gc.fillText("ESCでタイトルへ", 200, 420);
+                Font fNormal = Font.font("Verdana", FontWeight.BOLD, 24);
+                gc.setFont(fNormal);
+                
+                String tScore = "スコア: " + score;
+                Text txtScore = new Text(tScore); txtScore.setFont(fNormal);
+                double wScore = txtScore.getLayoutBounds().getWidth();
+                gc.fillText(tScore, (WINDOW_WIDTH - wScore) / 2, 320);
+                
+                String tRestart = "スペースか上矢印でリスタート";
+                Text txtRestart = new Text(tRestart); txtRestart.setFont(fNormal);
+                double wRestart = txtRestart.getLayoutBounds().getWidth();
+                gc.fillText(tRestart, (WINDOW_WIDTH - wRestart) / 2, 360);
+                
+                String tEsc = "ESCでタイトルへ";
+                Text txtEsc = new Text(tEsc); txtEsc.setFont(fNormal);
+                double wEsc = txtEsc.getLayoutBounds().getWidth();
+                gc.fillText(tEsc, (WINDOW_WIDTH - wEsc) / 2, 400);
             }
         }
     }
@@ -613,16 +636,42 @@ public class FlappyBirdApp extends Application {
             gc.fillText("スコア: " + score, WINDOW_WIDTH - 150, 40);
             
             if (!isRunning && !isGameOver) {
-                 gc.setFont(Font.font("Verdana", FontWeight.BOLD, 40));
-                 gc.fillText("上矢印でスタート", 130, 200);
+                 Font fStart = Font.font("Verdana", FontWeight.BOLD, 40);
+                 gc.setFont(fStart);
+                 String tStart = "上矢印でスタート";
+                 Text txtStart = new Text(tStart); txtStart.setFont(fStart);
+                 double wStart = txtStart.getLayoutBounds().getWidth();
+                 gc.fillText(tStart, (WINDOW_WIDTH - wStart) / 2, 200);
             }
             if (isGameOver) {
                 gc.setFill(Color.RED);
-                gc.setFont(Font.font("Verdana", FontWeight.BOLD, 50));
-                gc.fillText("ゲームオーバー", 120, 250);
-                gc.setFont(Font.font("Verdana", FontWeight.BOLD, 20));
-                gc.fillText("上矢印でリスタート", 200, 300);
-                gc.fillText("ESCでタイトルへ", 210, 330);
+                Font fOver = Font.font("Verdana", FontWeight.BOLD, 50);
+                gc.setFont(fOver);
+                String tOver = "ゲームオーバー";
+                Text txtOver = new Text(tOver); txtOver.setFont(fOver);
+                double wOver = txtOver.getLayoutBounds().getWidth();
+                gc.fillText(tOver, (WINDOW_WIDTH - wOver) / 2, 250);
+
+                Font fNormal = Font.font("Verdana", FontWeight.BOLD, 20);
+                gc.setFont(fNormal); 
+                // Set color back to Black or use Dark Gray? Game Over usually Red title, then instructions.
+                // Keeping previous logic which fell through? The previous logic set Fill RED only for "GAME OVER".
+                // Wait, previous code: gc.setFill(Color.RED) then "Game Over". Then gc.setFont(..20) "Restart".
+                // It did NOT reset color to Black/White. So Restart text was RED!
+                // Flappy Bird sets White for instructions. Let's start with Black or White? 
+                // Runner game background is White. So text can be Black (default) or Red (if inherited).
+                // Let's explicitly set a color for instructions.
+                gc.setFill(Color.BLACK); 
+                
+                String tRestart = "上矢印でリスタート";
+                Text txtRestart = new Text(tRestart); txtRestart.setFont(fNormal);
+                double wRestart = txtRestart.getLayoutBounds().getWidth();
+                gc.fillText(tRestart, (WINDOW_WIDTH - wRestart) / 2, 300);
+                
+                String tEsc = "ESCでタイトルへ";
+                Text txtEsc = new Text(tEsc); txtEsc.setFont(fNormal);
+                double wEsc = txtEsc.getLayoutBounds().getWidth();
+                gc.fillText(tEsc, (WINDOW_WIDTH - wEsc) / 2, 330);
             }
         }
         
