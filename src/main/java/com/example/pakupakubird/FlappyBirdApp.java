@@ -9,8 +9,10 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -117,20 +119,106 @@ public class FlappyBirdApp extends Application {
         
         VBox menuBox = new VBox(20);
         menuBox.setAlignment(Pos.CENTER);
-        menuBox.setStyle("-fx-background-color: rgba(255, 255, 255, 0.8); -fx-padding: 50;");
+        menuBox.setStyle("-fx-background-color: rgba(255, 255, 255, 0.9); -fx-padding: 50;");
         
-        Label titleLabel = new Label("ゲーム選択");
-        titleLabel.setFont(Font.font("Verdana", FontWeight.BOLD, 30));
+        // Title
+        Label titleLabel = new Label("Usako Game");
+        titleLabel.setFont(Font.font("Verdana", FontWeight.BOLD, 50));
         
-        Button flappyBtn = new Button("Flappy Usako");
-        flappyBtn.setStyle("-fx-font-size: 20px; -fx-min-width: 200px;");
+        // Subtitle
+        Label subLabel = new Label("ゲームを選択");
+        subLabel.setFont(Font.font("Verdana", FontWeight.BOLD, 20));
+        
+        // Flappy Button
+        Button flappyBtn = new Button();
+        flappyBtn.setStyle("-fx-pref-width: 300px; -fx-pref-height: 80px; -fx-padding: 0;");
+        
+        StackPane fPane = new StackPane();
+        fPane.setPrefSize(300, 80);
+        fPane.setPadding(new javafx.geometry.Insets(0, 20, 0, 20)); // Padding inside stackpane
+        
+        Label fLabel = new Label("Flappy Usako");
+        fLabel.setFont(Font.font("Verdana", FontWeight.BOLD, 24));
+        // Allow clicks on label to pass through or just part of graphic
+        
+        ImageView fView = new ImageView();
+        if (flappyGame.birdNormal != null) {
+            fView.setImage(flappyGame.birdNormal);
+            fView.setFitWidth(50);
+            fView.setFitHeight(50);
+            fView.setPreserveRatio(true);
+            
+            flappyBtn.setOnMouseEntered(e -> {
+                if (flappyGame.birdJump != null) fView.setImage(flappyGame.birdJump);
+            });
+            flappyBtn.setOnMouseExited(e -> {
+               if (flappyGame.birdNormal != null) fView.setImage(flappyGame.birdNormal);
+            });
+        }
+        
+        StackPane.setAlignment(fView, Pos.CENTER_LEFT);
+        StackPane.setAlignment(fLabel, Pos.CENTER);
+        fPane.getChildren().addAll(fView, fLabel);
+        flappyBtn.setGraphic(fPane);
+        
         flappyBtn.setOnAction(e -> startFlappyBird());
         
-        Button runBtn = new Button("Usako Run!");
-        runBtn.setStyle("-fx-font-size: 20px; -fx-min-width: 200px;");
-        runBtn.setOnAction(e -> startRunnerGame());
+        // Run Button
+        Button runBtn = new Button();
+        runBtn.setStyle("-fx-pref-width: 300px; -fx-pref-height: 80px; -fx-padding: 0;");
         
-        menuBox.getChildren().addAll(titleLabel, flappyBtn, runBtn);
+        StackPane rPane = new StackPane();
+        rPane.setPrefSize(300, 80);
+        rPane.setPadding(new javafx.geometry.Insets(0, 20, 0, 20));
+        
+        Label rLabel = new Label("Usako Run!");
+        rLabel.setFont(Font.font("Verdana", FontWeight.BOLD, 24));
+        
+        ImageView rView = new ImageView();
+        if (runnerGame.runAnim != null && runnerGame.runAnim[0] != null) {
+            rView.setImage(runnerGame.runAnim[0]);
+            rView.setFitWidth(50);
+            rView.setFitHeight(50);
+            rView.setPreserveRatio(true);
+            
+            // Animation for Run Button
+            AnimationTimer runBtnTimer = new AnimationTimer() {
+                private long lastUpdate = 0;
+                private int frame = 0;
+                @Override
+                public void handle(long now) {
+                     if (now - lastUpdate >= 100_000_000) { // 100ms
+                         lastUpdate = now;
+                         frame = (frame + 1) % 6;
+                         if (runnerGame.runAnim[frame] != null) {
+                             rView.setImage(runnerGame.runAnim[frame]);
+                         }
+                     }
+                }
+            };
+            
+            runBtn.setOnMouseEntered(e -> {
+                runBtnTimer.start();
+            });
+            runBtn.setOnMouseExited(e -> {
+                runBtnTimer.stop();
+                rView.setImage(runnerGame.runAnim[0]);
+            });
+            // Stop logic just in case
+            runBtn.setOnAction(e -> {
+                runBtnTimer.stop();
+                startRunnerGame();
+            });
+        } else {
+             runBtn.setOnAction(e -> startRunnerGame());
+        }
+        
+        StackPane.setAlignment(rView, Pos.CENTER_LEFT);
+        StackPane.setAlignment(rLabel, Pos.CENTER);
+        rPane.getChildren().addAll(rView, rLabel);
+        runBtn.setGraphic(rPane);
+        
+        menuBox.getChildren().addAll(titleLabel, subLabel, flappyBtn, runBtn);
         root.setCenter(menuBox); 
     }
 
