@@ -423,6 +423,7 @@ public class FlappyBirdApp extends Application {
         int score = 0;
         int highScore = 0;
         int tick = 0;
+        double animTick = 0;
         
         List<RunnerObstacle> obstacles = new ArrayList<>();
         Random random = new Random();
@@ -466,8 +467,10 @@ public class FlappyBirdApp extends Application {
             playerY = groundY;
             velocityY = 0;
             score = 0;
+
             highScore = HighScoreManager.getHighScore("runner");
             tick = 0;
+            animTick = 0;
             obsSpeed = 6;
             isRunning = false;
             isGameOver = false;
@@ -517,6 +520,10 @@ public class FlappyBirdApp extends Application {
             if (!isRunning || isGameOver) return;
             
             tick++;
+            
+            // Animation speed based on running speed
+            // Base speed 6.0 -> 1.0 increment. Speed 12.0 -> 2.0 increment.
+            animTick += (obsSpeed / 6.0);
             
             velocityY += gravity;
             playerY += velocityY;
@@ -715,11 +722,11 @@ public class FlappyBirdApp extends Application {
             // Squat
             if (isCrouching) {
                 // Animation
-                int frame = (tick / 5) % 5;
+                int frame = ((int)animTick / 5) % 5;
                 if (squatAnim[frame] != null) return squatAnim[frame];
             }
             // Run (6 frames)
-            int frame = (tick / 5) % 6;
+            int frame = ((int)animTick / 5) % 6;
             if (runAnim[frame] != null) return runAnim[frame];
             
             return null; // Fallback
