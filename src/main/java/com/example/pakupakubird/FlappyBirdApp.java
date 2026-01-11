@@ -420,8 +420,10 @@ public class FlappyBirdApp extends Application {
             if (!isRunning && !isGameOver) {
                 isRunning = true;
                 birdVelocity = JUMP_STRENGTH;
+                SoundManager.playJump();
             } else if (isRunning) {
                 birdVelocity = JUMP_STRENGTH;
+                SoundManager.playJump();
             } else if (isGameOver) {
                 resetGame();
             }
@@ -447,6 +449,7 @@ public class FlappyBirdApp extends Application {
                  if (!p.scored && p.x + PIPE_WIDTH < birdX) {
                      score++;
                      p.scored = true;
+                     SoundManager.playScore();
                  }
                  if (p.x + PIPE_WIDTH < -10) iter.remove();
                  if (checkCollision(p)) gameOver();
@@ -475,6 +478,7 @@ public class FlappyBirdApp extends Application {
         void gameOver() {
             isGameOver = true;
             isRunning = false;
+            SoundManager.playGameOver();
             HighScoreManager.setHighScore("flappy", score);
             highScore = HighScoreManager.getHighScore("flappy");
         }
@@ -667,6 +671,7 @@ public class FlappyBirdApp extends Application {
             if (isRunning) {
                 if (code == KeyCode.UP && Math.abs(playerY - groundY) < 1) { 
                     velocityY = jumpForce;
+                    SoundManager.playJump();
                 }
                 if (code == KeyCode.DOWN) {
                     isCrouching = true;
@@ -717,13 +722,17 @@ public class FlappyBirdApp extends Application {
                 if (obs.x < -100) iter.remove();
                 if (checkCollision(obs)) {
                     isGameOver = true;
+                    SoundManager.playGameOver();
                     HighScoreManager.setHighScore("runner", score);
                     highScore = HighScoreManager.getHighScore("runner");
                 }
             }
             
 
-            if (tick % 10 == 0) score++;
+            if (tick % 10 == 0) {
+                 score++;
+                 if (score % 100 == 0) SoundManager.playScore();
+            }
             if (tick % 300 == 0) obsSpeed += 0.5;
         }
 
