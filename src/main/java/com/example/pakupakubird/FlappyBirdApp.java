@@ -336,8 +336,19 @@ public class FlappyBirdApp extends Application {
         
         overlayBox.getChildren().addAll(title, scoreLabel, rankingBox);
         
-        // Input Area (Only if not submitted)
-        if (!isSubmitted) {
+        // Check Rank In
+        boolean isRankIn = false;
+        if (tops.size() < 5) {
+            isRankIn = true;
+        } else {
+            // Must be strictly greater to beat the 5th place (ties favor older records)
+            if (currentScore > tops.get(tops.size() - 1).score) {
+                isRankIn = true;
+            }
+        }
+        
+        // Input Area (Only if not submitted AND is Rank In)
+        if (!isSubmitted && isRankIn) {
             HBox inputBox = new HBox(10);
             inputBox.setAlignment(Pos.CENTER);
             
@@ -357,11 +368,17 @@ public class FlappyBirdApp extends Application {
             
             inputBox.getChildren().addAll(nameField, registerBtn);
             overlayBox.getChildren().add(inputBox);
-        } else {
+        } else if (isSubmitted) {
             Label successLabel = new Label("Registered!");
             successLabel.setTextFill(Color.LIGHTGREEN);
             successLabel.setFont(Font.font("Verdana", FontWeight.BOLD, 14));
             overlayBox.getChildren().add(successLabel);
+        } else {
+            // Rank Out 
+            Label outLabel = new Label("Rank Out");
+            outLabel.setTextFill(Color.GRAY);
+            outLabel.setFont(Font.font("Verdana", FontWeight.NORMAL, 14));
+            overlayBox.getChildren().add(outLabel);
         }
         
         // Buttons
