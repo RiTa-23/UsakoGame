@@ -1,4 +1,4 @@
-package com.example.pakupakubird;
+package com.example.usakogame;
 
 import javafx.application.Application;
 

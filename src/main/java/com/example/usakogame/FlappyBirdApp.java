@@ -1,4 +1,4 @@
-package com.example.pakupakubird;
+package com.example.usakogame;
 
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
