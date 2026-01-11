@@ -606,11 +606,11 @@ public class FlappyBirdApp extends Application {
             // Obstacles
             for (RunnerObstacle obs : obstacles) {
                 if (obs.isSky) {
-                    gc.setFill(Color.ORANGE); // Bird/Missile
-                    // Draw somewhat bird-like?
+                    gc.setFill(Color.WHITE); 
                     gc.fillOval(obs.x, obs.y, obs.w, obs.h);
+                    gc.strokeOval(obs.x, obs.y, obs.w, obs.h);
                 } else {
-                    gc.setFill(Color.web("#74BF2E")); // Cactus/Pipe
+                    gc.setFill(Color.WHITE);
                     gc.fillRect(obs.x, obs.y, obs.w, obs.h);
                     gc.strokeRect(obs.x, obs.y, obs.w, obs.h);
                 }
