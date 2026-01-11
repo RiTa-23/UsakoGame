@@ -75,7 +75,7 @@ public class FlappyBirdApp extends Application {
              else if (currentState == GameState.RUN) runnerGame.handleInput();
         });
 
-        stage.setTitle("JavaFX Game Centre");
+        stage.setTitle("UsakoGame");
         stage.setScene(scene);
         stage.show();
 
