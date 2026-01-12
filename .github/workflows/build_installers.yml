@@ -32,9 +32,10 @@ jobs:
 
     - name: Create Installer (Windows)
       if: runner.os == 'Windows'
+      shell: cmd
       run: |
-        # Use simple cmd syntax or pwsh
-        # Note: --module-path uses ; for Windows
+        REM Use simple cmd syntax
+        REM Note: --module-path uses ; for Windows
         jpackage ^
           --type exe ^
           --dest target/dist ^
