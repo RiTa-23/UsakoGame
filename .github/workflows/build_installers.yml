@@ -1,0 +1,68 @@
+name: Build Installers
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        cache: 'maven'
+
+    - name: Grant execute permission for mvnw
+      if: runner.os != 'Windows'
+      run: chmod +x mvnw
+
+    - name: Build with Maven
+      run: ./mvnw clean package
+
+    - name: Create Installer (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        # Use simple cmd syntax or pwsh
+        # Note: --module-path uses ; for Windows
+        jpackage ^
+          --type exe ^
+          --dest target/dist ^
+          --name UsakoGame ^
+          --app-version 1.0.0 ^
+          --module-path "target/libs;target/UsakoGame-1.0-SNAPSHOT.jar" ^
+          --module com.example.usakogame/com.example.usakogame.FlappyBirdApp ^
+          --win-dir-chooser ^
+          --win-shortcut ^
+          --win-menu ^
+          --java-options "-Dfile.encoding=UTF-8"
+
+    - name: Create Installer (Mac)
+      if: runner.os == 'macOS'
+      run: |
+        # Note: --module-path uses : for Mac/Linux
+        jpackage \
+          --type dmg \
+          --dest target/dist \
+          --name UsakoGame \
+          --app-version 1.0.0 \
+          --module-path "target/libs:target/UsakoGame-1.0-SNAPSHOT.jar" \
+          --module com.example.usakogame/com.example.usakogame.FlappyBirdApp \
+          --mac-package-name UsakoGame \
+          --java-options "-Dfile.encoding=UTF-8"
+
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: UsakoGame-Installer-${{ runner.os }}
+        path: target/dist/*
