@@ -236,6 +236,11 @@ public class FlappyBirdApp extends Application {
         rPane.getChildren().addAll(rView, rLabel);
         runBtn.setGraphic(rPane);
         
+        // Ranking Button (Small, under main buttons)
+        Button rankBtn = new Button("ランキング");
+        rankBtn.setStyle("-fx-font-size: 14px; -fx-background-color: transparent; -fx-text-fill: blue; -fx-underline: true; -fx-cursor: hand;");
+        rankBtn.setOnAction(e -> showRankingScreen());
+
         // Developer Credit
         HBox creditBox = new HBox(10);
         creditBox.setAlignment(Pos.CENTER);
@@ -271,13 +276,80 @@ public class FlappyBirdApp extends Application {
             getHostServices().showDocument("https://rita-s-portfolio.vercel.app/");
         });
 
-        menuBox.getChildren().addAll(titleLabel, subLabel, flappyBtn, runBtn, creditBox);
+        menuBox.getChildren().addAll(titleLabel, subLabel, flappyBtn, runBtn, rankBtn, creditBox);
         
         // Ensure overlay is hidden on title
         if (overlayBox != null) overlayBox.setVisible(false);
         isOverlayActive = false;
         
         root.setCenter(menuBox); 
+        root.setCenter(menuBox); 
+    }
+
+    private void showRankingScreen() {
+        VBox rankRoot = new VBox(20);
+        rankRoot.setAlignment(Pos.CENTER);
+        rankRoot.setStyle("-fx-background-color: rgba(255, 255, 255, 0.95); -fx-padding: 30;");
+
+        Label title = new Label("ランキング");
+        title.setFont(Font.font("Verdana", FontWeight.BOLD, 30));
+
+        HBox tablesBox = new HBox(40);
+        tablesBox.setAlignment(Pos.CENTER);
+
+        // Flappy Ranking
+        VBox flappyBox = createRankingTable("Flappy Usako", "flappy");
+        // Runner Ranking
+        VBox runnerBox = createRankingTable("Usako Run!", "runner");
+
+        tablesBox.getChildren().addAll(flappyBox, runnerBox);
+
+        // Delete Data Button
+        Button deleteBtn = new Button("ランキングデータを全削除");
+        deleteBtn.setStyle("-fx-text-fill: red; -fx-border-color: red; -fx-background-color: white;");
+        deleteBtn.setOnAction(e -> {
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("データ削除");
+            alert.setHeaderText("本当に削除しますか？");
+            alert.setContentText("すべてのランキングデータが消去されます。元に戻すことはできません。");
+            
+            alert.showAndWait().ifPresent(response -> {
+                if (response == ButtonType.OK) {
+                    HighScoreManager.clearAllData();
+                    // Refresh screen
+                    showRankingScreen();
+                }
+            });
+        });
+
+        Button backBtn = new Button("戻る");
+        backBtn.setOnAction(e -> showTitleScreen());
+
+        rankRoot.getChildren().addAll(title, tablesBox, new Separator(), deleteBtn, backBtn);
+        root.setCenter(rankRoot);
+    }
+
+    private VBox createRankingTable(String title, String mode) {
+        VBox box = new VBox(10);
+        box.setAlignment(Pos.TOP_CENTER);
+        box.setStyle("-fx-border-color: lightgray; -fx-padding: 10; -fx-min-width: 200;");
+
+        Label label = new Label(title);
+        label.setFont(Font.font("Verdana", FontWeight.BOLD, 18));
+        box.getChildren().add(label);
+
+        List<HighScoreManager.ScoreEntry> list = HighScoreManager.getTopScores(mode);
+        if (list.isEmpty()) {
+            box.getChildren().add(new Label("No Data"));
+        } else {
+            for (int i = 0; i < list.size(); i++) {
+                HighScoreManager.ScoreEntry e = list.get(i);
+                Label l = new Label((i + 1) + ". " + e.name + " : " + e.score);
+                l.setFont(Font.font("Verdana", 14));
+                box.getChildren().add(l);
+            }
+        }
+        return box;
     }
 
     private void startFlappyBird() {

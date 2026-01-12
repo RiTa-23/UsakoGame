@@ -128,6 +128,14 @@ public class HighScoreManager {
         // Let's deprecate this side-effect. The Game Over screen will handle submission.
     }
 
+    public static void clearAllData() {
+        properties.clear();
+        File file = new File(FILE_PATH);
+        if (file.exists()) {
+            file.delete();
+        }
+    }
+
     public static class ScoreEntry {
         public String name;
         public int score;
