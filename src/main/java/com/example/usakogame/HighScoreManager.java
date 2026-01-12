@@ -10,7 +10,8 @@ import java.util.List;
 import java.util.Properties;
 
 public class HighScoreManager {
-    private static final String DIR_PATH = "usako_save";
+    // Use java.home to save relative to the application directory (portable text)
+    private static final String DIR_PATH = System.getProperty("java.home") + "/usako_save";
     private static final String FILE_PATH = DIR_PATH + "/scores.properties";
     private static final int MAX_RANKING = 5;
     private static Properties properties = new Properties();
