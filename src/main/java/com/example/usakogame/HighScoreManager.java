@@ -10,13 +10,33 @@ import java.util.List;
 import java.util.Properties;
 
 public class HighScoreManager {
-    // Use java.home to save relative to the application directory (portable text)
-    private static final String DIR_PATH = System.getProperty("java.home") + "/usako_save";
-    private static final String FILE_PATH = DIR_PATH + "/scores.properties";
+    private static final String DIR_PATH;
+    private static final String FILE_PATH;
     private static final int MAX_RANKING = 5;
     private static Properties properties = new Properties();
 
     static {
+        // Determine the OS-specific data directory
+        String os = System.getProperty("os.name").toLowerCase();
+        String baseDir;
+
+        if (os.contains("win")) {
+            // Windows: %APPDATA%\UsakoGame
+            baseDir = System.getenv("APPDATA");
+            if (baseDir == null) {
+                baseDir = System.getProperty("user.home");
+            }
+        } else if (os.contains("mac")) {
+            // Mac: ~/Library/Application Support/UsakoGame
+            baseDir = System.getProperty("user.home") + "/Library/Application Support";
+        } else {
+            // Linux/Other: ~/.usakogame
+            baseDir = System.getProperty("user.home");
+        }
+
+        DIR_PATH = baseDir + "/UsakoGame";
+        FILE_PATH = DIR_PATH + "/scores.properties";
+
         load();
     }
 
