@@ -63,6 +63,34 @@ JavaFXで開発した、うさこを操作する2つのミニゲームを楽し�
 ./mvnw clean javafx:run
 ```
 
+## リリース（配布）の手順 (How to Release)
+
+配布用のパッケージ（ZIP）を作成し、GitHubにリリースする方法です。
+
+### 1. 配布用パッケージの作成
+以下のコマンドで、JREを同梱した配布用ZIPファイルを作成します。
+
+```bash
+./mvnw clean javafx:jlink
+```
+成功すると `target/app.zip` が作成されます。これが配布するファイルです。
+
+### 2. GitHubへタグを送信
+バージョンをタグとして記録し、GitHubへプッシュします（例: v1.0.0）。
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+### 3. GitHubでリリースを作成
+ブラウザで [Releasesページ](https://github.com/RiTa-23/PakuPakuBird/releases) を開き、「Create a new release」から行います。
+
+1. **Choose a tag**: プッシュしたタグ（`v1.0.0`）を選択
+2. **Title/Description**: 適切なタイトルと説明を記入
+3. **Attach binaries**: 作成した `target/app.zip` をアップロード
+4. **Publish release** で公開
+
 ## 開発環境
 - Java 23
 - JavaFX 23
