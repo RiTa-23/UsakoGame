@@ -67,6 +67,10 @@
                             <noManPages>true</noManPages>
                             <stripDebug>true</stripDebug>
                             <noHeaderFiles>true</noHeaderFiles>
+                            <!-- jpackage settings -->
+                            <compress>2</compress>
+                            <vendor>Rita</vendor>
+                            <name>UsakoGame</name>
                         </configuration>
                     </execution>
                 </executions>
