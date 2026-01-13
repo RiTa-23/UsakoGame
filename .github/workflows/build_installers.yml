@@ -46,7 +46,7 @@ jobs:
           --name UsakoGame ^
           --app-version 1.0.0 ^
           --module-path "target/libs;target/UsakoGame-1.0-SNAPSHOT.jar" ^
-          --module com.example.usakogame/com.example.usakogame.FlappyBirdApp ^
+          --module com.example.usakogame/com.example.usakogame.UsakoGameApp ^
           --win-dir-chooser ^
           --win-shortcut ^
           --win-menu ^
