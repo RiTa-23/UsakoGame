@@ -50,7 +50,6 @@ jobs:
           --win-dir-chooser ^
           --win-shortcut ^
           --win-menu ^
-          --win-console ^
           --java-options "-Dfile.encoding=UTF-8"
 
     - name: Create Installer (Mac)
