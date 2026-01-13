@@ -1,4 +1,4 @@
-package com.example.usakogame;
+package com.example.usakogame.manager;
 
 import java.io.File;
 import java.io.FileInputStream;

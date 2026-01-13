@@ -1,4 +1,4 @@
-package com.example.usakogame;
+package com.example.usakogame.manager;
 
 import javax.sound.sampled.*;
 
